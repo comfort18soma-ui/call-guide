@@ -26,7 +26,10 @@ type CallChartRow = {
   status: string;
   created_at: string;
   songs: { title?: string; artist?: string; artists?: { name?: string } | null } | null;
-  profiles: { username: string | null } | null;
+  profiles:
+    | { username: string | null; handle: string | null }
+    | { username: string | null; handle: string | null }[]
+    | null;
   call_sections: CallSectionRow[];
 };
 
@@ -215,12 +218,19 @@ export default function AdminCallsPage() {
                       const isOpen = expandedIds.has(chart.id);
                       const artistName =
                         chart.songs?.artist ??
-                        (chart.songs?.artists && typeof chart.songs.artists === "object" && "name" in chart.songs.artists
+                        (chart.songs?.artists &&
+                        typeof chart.songs.artists === "object" &&
+                        "name" in chart.songs.artists
                           ? (chart.songs.artists as { name?: string }).name
                           : null) ??
                         "—";
+                      const profile = Array.isArray(chart.profiles)
+                        ? chart.profiles[0]
+                        : chart.profiles;
+                      const profileHandle = profile?.handle ?? null;
+                      const profileUsername = profile?.username ?? "名無し";
                       return (
-                        <li key={chart.id} className="rounded-lg overflow-hidden">
+                        <li key={chart.id} className="overflow-hidden rounded-lg">
                           {/* データ行: grid-cols-12 でヘッダーと揃える */}
                           <div
                             role="button"
@@ -241,19 +251,19 @@ export default function AdminCallsPage() {
                                 {chart.songs?.title ?? `ID: ${chart.song_id}`}
                               </Link>
                             </div>
-                            <div className="col-span-2 flex items-center gap-1.5 truncate min-w-0 text-zinc-400">
+                            <div className="col-span-2 flex min-w-0 items-center gap-1.5 truncate text-zinc-400">
                               <User className="h-3.5 w-3.5 shrink-0" />
                               <span className="truncate">
-                                {(chart.profiles?.handle || chart.author_id) ? (
+                                {(profileHandle || chart.author_id) ? (
                                   <Link
-                                    href={`/users/${chart.profiles?.handle || chart.author_id}`}
+                                    href={`/users/${profileHandle || chart.author_id}`}
                                     className="hover:underline hover:text-zinc-200"
                                     onClick={(e) => e.stopPropagation()}
                                   >
-                                    {chart.profiles?.username ?? "名無し"}
+                                    {profileUsername}
                                   </Link>
                                 ) : (
-                                  chart.profiles?.username ?? "名無し"
+                                  profileUsername
                                 )}
                               </span>
                             </div>
