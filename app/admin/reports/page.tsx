@@ -107,7 +107,7 @@ export default function AdminReportsPage() {
         .order("created_at", { ascending: false });
 
       if (fetchError) throw fetchError;
-      setReports((data as ReportRow[]) ?? []);
+      setReports((data as unknown as ReportRow[]) ?? []);
     } catch (err) {
       const msg =
         err instanceof Error ? err.message : "レポート一覧の取得に失敗しました";
