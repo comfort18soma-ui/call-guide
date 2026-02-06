@@ -185,8 +185,8 @@ export default function AdminRequestsPage() {
         console.error("🔥 Error Hint:", (fetchError as { hint?: string }).hint);
         throw fetchError;
       }
-      setBulletinPending((data as BulletinBoardRow[]) ?? []);
-      setBulletinCount((data as BulletinBoardRow[])?.length ?? 0);
+      setBulletinPending((data as unknown as BulletinBoardRow[]) ?? []);
+      setBulletinCount((data as unknown as BulletinBoardRow[])?.length ?? 0);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "データの取得に失敗しました";
       setError(errorMessage);
