@@ -214,7 +214,7 @@ export default function AdminManagePage() {
       console.error("🔥 Supabase Fetch Error (bulletin):", JSON.stringify(e, null, 2));
       throw e;
     }
-    setBulletinApproved((data as BulletinRow[]) ?? []);
+    setBulletinApproved((data as unknown as BulletinRow[]) ?? []);
   };
 
   const loadAll = async () => {
