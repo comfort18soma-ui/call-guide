@@ -91,7 +91,7 @@ export default function BoardDatePage() {
           .order("created_at", { ascending: false });
 
         if (error) throw error;
-        setPosts((data as DateBoardPost[]) ?? []);
+        setPosts((data as unknown as DateBoardPost[]) ?? []);
       } catch (err) {
         console.error(err);
         setError("イベントの取得に失敗しました");
@@ -170,15 +170,19 @@ export default function BoardDatePage() {
                       </h3>
                       <p className="text-xs text-zinc-400">
                         投稿者:{" "}
-                        {(post.profiles?.handle || post.user_id) ? (
+                        {((post.profiles as any)?.handle || post.user_id) ? (
                           <Link
-                            href={post.profiles?.handle ? `/users/${post.profiles.handle}` : `/users/${post.user_id}`}
+                            href={
+                              (post.profiles as any)?.handle
+                                ? `/users/${(post.profiles as any).handle}`
+                                : "#"
+                            }
                             className="text-rose-300 hover:underline"
                           >
-                            {post.profiles?.username || "名無しさん"}
+                            {(post.profiles as any)?.username || "名無しさん"}
                           </Link>
                         ) : (
-                          <span>{post.profiles?.username || "名無しさん"}</span>
+                          <span>{(post.profiles as any)?.username || "名無しさん"}</span>
                         )}
                       </p>
                       {post.live_title?.trim() && (
