@@ -381,7 +381,7 @@ export default function AdminRequestsPage() {
       setReplyDialogOpen(false);
       setReplyingRequestId(null);
       setReplyText("");
-      await loadRequests(activeTab);
+      await loadRequests(activeTab as any);
       alert("保存しました");
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "返信の送信に失敗しました";
@@ -417,7 +417,7 @@ export default function AdminRequestsPage() {
 
       if (deleteError) throw deleteError;
 
-      await loadRequests(activeTab);
+      await loadRequests(activeTab as any);
       setReplyDraft((prev) => {
         const next = { ...prev };
         delete next[requestId];
