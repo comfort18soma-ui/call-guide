@@ -170,7 +170,7 @@ export default function AdminManagePage() {
       url: string | null;
       author_id?: string | null;
       song_id?: number | null;
-      profiles?: { username: string | null } | null;
+      profiles: any;
       songs?: { id?: number; title?: string; artist_id?: string; artists?: { name?: string } | null } | null;
     }>;
     setMixes(rows.map((r) => {
