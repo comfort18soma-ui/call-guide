@@ -122,7 +122,7 @@ export default function MixDetailPage() {
         } else {
           const seen = new Set<string>();
           const songsList: SongInfo[] = [];
-          const rows = (sectionData ?? []) as Array<{
+          const rows = (sectionData ?? []) as unknown as Array<{
             call_charts?: {
               id: string;
               status: string;

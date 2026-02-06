@@ -62,7 +62,7 @@ export default function DictionaryPage() {
           .order("title", { ascending: true });
 
         if (fetchError) throw fetchError;
-        setMixes((data as Mix[]) ?? []);
+        setMixes((data as unknown as Mix[]) ?? []);
       } catch (err) {
         console.warn("人気順での取得に失敗、新着順で再試行します", err);
         try {
@@ -83,7 +83,7 @@ export default function DictionaryPage() {
             `)
             .order("created_at", { ascending: false })
             .order("title", { ascending: true });
-          setMixes((fallbackData as Mix[]) ?? []);
+          setMixes((fallbackData as unknown as Mix[]) ?? []);
           setError(null);
         } catch (fallbackErr) {
           const message = fallbackErr instanceof Error ? fallbackErr.message : "データの取得に失敗しました";
