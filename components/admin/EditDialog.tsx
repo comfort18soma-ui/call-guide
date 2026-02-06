@@ -96,7 +96,7 @@ export function EditDialog({ kind, data, open, onOpenChange, onSaved }: EditDial
     }
     if (kind === "mix") {
       const m = data as MixRow;
-      setMixTitle(m.name);
+      setMixTitle(m.title);
       setContent(m.content);
       setBarCount(m.bars != null ? String(m.bars) : "");
       setMixUrl(m.url ?? "");

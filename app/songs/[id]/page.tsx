@@ -145,7 +145,7 @@ export default function SongDetailPage() {
         const { data, error: fetchError } = await query;
 
         if (fetchError) throw fetchError;
-        const rows = (data ?? []) as CallChartRow[];
+        const rows = (data ?? []) as unknown as CallChartRow[];
 
         // mix_id を持つセクションの MIX タイトルをまとめて取得
         const mixIdSet = new Set<string>();

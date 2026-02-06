@@ -46,7 +46,7 @@ export function UsernameForm() {
       setUserName(getDisplayName(profile as Profile));
       const profileHandle = (profile as Profile)?.handle;
       setHandle(profileHandle ?? "");
-      setInitialHandle(profileHandle);
+      setInitialHandle(profileHandle ?? null);
       setLoading(false);
     };
     void load();

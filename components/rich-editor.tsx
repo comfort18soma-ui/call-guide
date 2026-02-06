@@ -49,7 +49,7 @@ function Toolbar({
   htmlMode,
   onToggleHtmlMode,
 }: {
-  editor: ReturnType<typeof useEditor>["editor"];
+  editor: any;
   onImageUploading?: (uploading: boolean) => void;
   htmlMode?: boolean;
   onToggleHtmlMode?: () => void;

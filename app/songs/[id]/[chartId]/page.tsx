@@ -122,7 +122,7 @@ export default function CallChartDetailPage() {
           return;
         }
 
-        const row = data as {
+        const row = data as unknown as {
           id: string;
           song_id: number;
           author_id: string | null;

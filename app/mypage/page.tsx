@@ -202,10 +202,10 @@ export default function MypagePage() {
       if (myChartsRes.error) throw myChartsRes.error;
       if (myBoardsRes.error) throw myBoardsRes.error;
 
-      const allMixBookmarks = (bookmarksMixRes.data ?? []) as BookmarkWithMix[];
+      const allMixBookmarks = (bookmarksMixRes.data ?? []) as unknown as BookmarkWithMix[];
       setPracticeList(allMixBookmarks.filter((b) => b.category === "practice"));
-      setFavoritesList((bookmarksCallChartRes.data ?? []) as BookmarkWithCallChart[]);
-      setFollowingList((followsRes.data ?? []) as FollowRow[]);
+      setFavoritesList((bookmarksCallChartRes.data ?? []) as unknown as BookmarkWithCallChart[]);
+      setFollowingList((followsRes.data ?? []) as unknown as FollowRow[]);
       setMyMixList((myMixesRes.data ?? []) as MyMixRow[]);
       setMyChartList((myChartsRes.data ?? []) as MyChartRow[]);
       setMyBoardList((myBoardsRes.data ?? []) as MyBoardRow[]);
@@ -299,7 +299,7 @@ export default function MypagePage() {
       const moved = practiceList.find((b) => b.id === bookmarkId);
       if (moved) {
         setPracticeList((prev) => prev.filter((b) => b.id !== bookmarkId));
-        setFavoritesList((prev) => [moved, ...prev]);
+        setFavoritesList((prev) => [moved as any, ...prev]);
       }
     } catch (err) {
       console.error("習得完了エラー:", err);

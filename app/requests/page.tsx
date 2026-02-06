@@ -42,6 +42,8 @@ type RequestInsert = {
 };
 
 export default function RequestsPage() {
+  const router = useRouter();
+
   // アーティストタブの状態
   const [artistName, setArtistName] = useState("");
   const [artistReading, setArtistReading] = useState("");
