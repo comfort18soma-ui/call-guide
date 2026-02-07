@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Megaphone, ChevronRight, Wrench, Reply, ListChecks, Music, Headphones } from "lucide-react";
+import { Megaphone, ChevronRight, Reply, ListChecks, Music, Headphones } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
-import { UserStatus } from "@/components/UserStatus";
+import { Header } from "@/components/header";
 import { useUserRole } from "@/hooks/useUserRole";
 import { HorizontalScrollList } from "@/components/horizontal-scroll-list";
 
@@ -163,27 +163,7 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* ヘッダー: コンパクト */}
-      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-zinc-800 bg-zinc-950/95 px-3 py-2 backdrop-blur-sm">
-        <div className="flex items-center gap-2">
-          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-500 to-pink-500 text-[10px] font-bold text-white">
-            CG
-          </span>
-          <span className="text-sm font-semibold tracking-tight">
-            CallGuide
-          </span>
-          <UserStatus />
-        </div>
-        {role === "admin" && (
-          <Link
-            href="/admin/requests"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-300"
-            aria-label="管理画面へ"
-          >
-            <Wrench className="h-5 w-5" />
-          </Link>
-        )}
-      </header>
+      <Header />
 
       <section className="flex-1 px-3 py-4">
         <div className="mx-auto max-w-md">
