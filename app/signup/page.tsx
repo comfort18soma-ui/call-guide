@@ -8,6 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  getAuthErrorMessage,
+  DEFAULT_SIGNUP_ERROR,
+} from "@/lib/auth-errors";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -68,8 +72,8 @@ export default function SignupPage() {
       setEmailSent(true);
       setError(null);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "新規登録に失敗しました";
-      setError(errorMessage);
+      const rawMessage = err instanceof Error ? err.message : "";
+      setError(getAuthErrorMessage(rawMessage, DEFAULT_SIGNUP_ERROR));
     } finally {
       setLoading(false);
     }

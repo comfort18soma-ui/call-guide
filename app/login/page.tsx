@@ -8,6 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  getAuthErrorMessage,
+  DEFAULT_LOGIN_ERROR,
+  DEFAULT_SIGNUP_ERROR,
+} from "@/lib/auth-errors";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -54,8 +59,8 @@ export default function LoginPage() {
       // ログイン成功
       window.location.href = "/";
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "ログインに失敗しました";
-      setError(errorMessage);
+      const rawMessage = err instanceof Error ? err.message : "";
+      setError(getAuthErrorMessage(rawMessage, DEFAULT_LOGIN_ERROR));
     } finally {
       setLoading(false);
     }
@@ -114,8 +119,8 @@ export default function LoginPage() {
       setEmailSent(true);
       setError(null);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "新規登録に失敗しました";
-      setError(errorMessage);
+      const rawMessage = err instanceof Error ? err.message : "";
+      setError(getAuthErrorMessage(rawMessage, DEFAULT_SIGNUP_ERROR));
     } finally {
       setLoading(false);
     }
