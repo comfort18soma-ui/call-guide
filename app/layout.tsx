@@ -17,8 +17,8 @@ export const metadata: Metadata = {
   description: "アイドル・コンカフェのコールガイド共有サイト",
   themeColor: "#000000",
   icons: {
-    icon: "/icon-192.png",
-    apple: "/apple-touch-icon.png",
+    icon: [{ url: "/icon-192.png?v=2", sizes: "192x192", type: "image/png" }],
+    apple: [{ url: "/apple-touch-icon.png?v=2", sizes: "180x180", type: "image/png" }],
   },
   openGraph: {
     title: "Call Guide",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     locale: "ja_JP",
     type: "website",
   },
-  manifest: "/manifest.json",
+  manifest: "/manifest.json?v=2",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
