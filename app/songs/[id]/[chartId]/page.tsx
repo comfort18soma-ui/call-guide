@@ -7,10 +7,9 @@ import {
   Loader2,
   User,
   ArrowLeft,
-  Youtube,
   ExternalLink,
   Heart,
-  Share2,
+  Share,
   Music,
   Trash2,
 } from "lucide-react";
@@ -22,6 +21,22 @@ import { ReportDialog } from "@/components/report-dialog";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+function getYoutubeEmbedUrl(url: string | null): string | null {
+  if (!url?.trim()) return null;
+  try {
+    const u = new URL(url);
+    const v =
+      u.searchParams.get("v") ??
+      (u.pathname.includes("/embed/") ? u.pathname.split("/embed/")[1]?.split("/")[0] : null);
+    if (v) return `https://www.youtube.com/embed/${v}`;
+    const shortMatch = url.match(/(?:youtu\.be\/)([a-zA-Z0-9_-]+)/);
+    if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`;
+  } catch {
+    return null;
+  }
+  return null;
+}
 
 type SongInfo = {
   id: number;
@@ -65,9 +80,6 @@ export default function CallChartDetailPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [likeCount, setLikeCount] = useState<number>(0);
-  const [shareStatus, setShareStatus] = useState<"idle" | "copied" | "error">(
-    "idle",
-  );
   const { role } = useUserRole();
 
   useEffect(() => {
@@ -286,9 +298,12 @@ export default function CallChartDetailPage() {
   };
 
   const handleShare = async () => {
-    const url =
-      typeof window !== "undefined" ? window.location.href : undefined;
-    const title = chart?.title || song?.title || "CallGuide コール表";
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    const songTitle = song?.title ?? "コール表";
+    const artistName = song?.artist_name ?? "";
+    const title = artistName
+      ? `${songTitle} / ${artistName} のコール表 | Call Guide`
+      : `${songTitle} | Call Guide`;
 
     try {
       if (navigator.share && url) {
@@ -302,16 +317,8 @@ export default function CallChartDetailPage() {
       // ユーザーキャンセルなどは無視
     }
 
-    if (!url) return;
-
-    try {
-      await navigator.clipboard.writeText(url);
-      setShareStatus("copied");
-      setTimeout(() => setShareStatus("idle"), 2000);
-    } catch {
-      setShareStatus("error");
-      setTimeout(() => setShareStatus("idle"), 2000);
-    }
+    const tweetText = encodeURIComponent(`${title} ${url}`);
+    window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, "_blank", "noopener,noreferrer");
   };
 
   const handleDelete = async () => {
@@ -380,6 +387,7 @@ export default function CallChartDetailPage() {
   const artistHref = song.artist_id ? `/artists/${song.artist_id}` : "/calls";
   const authorDisplay =
     chart.profiles?.username ?? chart.profiles?.handle ?? chart.author_id ?? "名無し";
+  const youtubeEmbedUrl = getYoutubeEmbedUrl(song.youtube_url);
 
   return (
     <main className="min-h-screen bg-black pb-24 text-zinc-50">
@@ -407,19 +415,21 @@ export default function CallChartDetailPage() {
               >
                 {song.artist_name}
               </Link>
-              {(song.youtube_url || song.apple_music_url || song.amazon_music_url) && (
+              {youtubeEmbedUrl && (
+                <div className="my-4 w-full max-w-full overflow-hidden rounded-lg">
+                  <div className="aspect-video w-full">
+                    <iframe
+                      src={youtubeEmbedUrl}
+                      title="YouTube動画"
+                      className="h-full w-full rounded-lg"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                </div>
+              )}
+              {(song.apple_music_url || song.amazon_music_url) && (
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                  {song.youtube_url && (
-                    <a
-                      href={song.youtube_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex h-8 items-center gap-1.5 rounded-full border border-red-500/40 bg-red-500/10 px-2.5 text-[11px] font-medium text-red-400 transition-colors hover:bg-red-500/20"
-                    >
-                      <Youtube className="h-4 w-4" />
-                      <span>YouTubeで聴く</span>
-                    </a>
-                  )}
                   {song.apple_music_url && (
                     <a
                       href={song.apple_music_url}
@@ -489,16 +499,14 @@ export default function CallChartDetailPage() {
                 />
                 <span className="ml-1 tabular-nums">{likeCount}</span>
               </Button>
-              <Button
+              <button
                 type="button"
-                variant="ghost"
-                size="sm"
-                className="h-8 rounded-full px-2.5 text-[11px] text-zinc-300 hover:bg-zinc-900"
                 onClick={handleShare}
+                className="flex h-8 shrink-0 items-center justify-center rounded-full p-2 text-zinc-400 transition-all hover:bg-white/10 hover:text-zinc-300 active:scale-95"
+                aria-label="共有"
               >
-                <Share2 className="h-3.5 w-3.5" />
-                <span className="ml-1">共有</span>
-              </Button>
+                <Share className="h-3.5 w-3.5" />
+              </button>
               {role === "admin" && (
                 <Button
                   type="button"
@@ -513,16 +521,6 @@ export default function CallChartDetailPage() {
               )}
             </div>
           </div>
-          {shareStatus === "copied" && (
-            <p className="mt-1 text-[10px] text-emerald-300">
-              URLをコピーしました
-            </p>
-          )}
-          {shareStatus === "error" && (
-            <p className="mt-1 text-[10px] text-red-300">
-              コピーに失敗しました
-            </p>
-          )}
         </section>
 
         {/* セクションごとのコール内容 */}

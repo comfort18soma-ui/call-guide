@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Music, Youtube, Loader2, User, ExternalLink, ChevronRight } from "lucide-react";
+import { Music, Youtube, Loader2, User, ExternalLink, ChevronRight, Share } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 
@@ -122,6 +122,24 @@ export default function ArtistDetailPage() {
 
   const xUrl = artist.x_url ?? null;
 
+  const handleShare = async () => {
+    const title = `${artist.name}のコール表一覧 | Call Guide`;
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    try {
+      if (navigator.share && url) {
+        await navigator.share({
+          title,
+          url,
+        });
+        return;
+      }
+    } catch {
+      // ユーザーキャンセルなどは無視
+    }
+    const tweetText = encodeURIComponent(`${title} ${url}`);
+    window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <main className="min-h-screen bg-black pb-24 text-zinc-50">
       <div className="mx-auto max-w-md px-4 py-6">
@@ -133,9 +151,19 @@ export default function ArtistDetailPage() {
                 <User className="h-7 w-7" />
               </div>
               <div className="min-w-0 flex-1">
-                <h1 className="text-xl font-semibold tracking-tight text-zinc-100">
-                  {artist.name}
-                </h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-xl font-semibold tracking-tight text-zinc-100">
+                    {artist.name}
+                  </h1>
+                  <button
+                    type="button"
+                    onClick={handleShare}
+                    className="shrink-0 rounded-full p-2 text-zinc-400 transition-colors hover:bg-white/10 hover:text-zinc-100 active:scale-95"
+                    aria-label="共有"
+                  >
+                    <Share className="h-4 w-4" />
+                  </button>
+                </div>
                 {artist.reading && (
                   <p className="mt-0.5 text-sm text-zinc-500">（{artist.reading}）</p>
                 )}
