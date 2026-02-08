@@ -9,12 +9,20 @@ export const contentType = "image/png";
 
 async function loadGoogleFont(text: string): Promise<ArrayBuffer> {
   const url = `https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=${encodeURIComponent(text)}`;
-  const css = await fetch(url).then((res) => res.text());
-  const match = css.match(/src:\s*url\(([^)]+)\)\s+format\('(woff2|opentype|truetype)'\)/);
-  if (match) {
-    const fontUrl = match[1].replace(/^["']|["']$/g, "");
+  const css = await fetch(url, {
+    headers: {
+      "User-Agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36",
+    },
+  }).then((res) => res.text());
+
+  const resource = css.match(
+    /src:\s*url\((.+)\)\s+format\('(opentype|truetype|woff2|woff)'\)/
+  );
+  if (resource) {
+    const fontUrl = resource[1].replace(/^["']|["']$/g, "");
     const response = await fetch(fontUrl);
-    if (response.ok) return response.arrayBuffer();
+    if (response.status === 200) return response.arrayBuffer();
   }
   throw new Error("Failed to load font data");
 }
@@ -43,7 +51,13 @@ export default async function Image({
     if (row?.artists?.name) artistName = row.artists.name;
   }
 
-  const fontData = await loadGoogleFont(title + artistName + "コール表CallGuide");
+  const textToRender = title + artistName + "コール表CallGuide";
+  let fontData: ArrayBuffer | null = null;
+  try {
+    fontData = await loadGoogleFont(textToRender);
+  } catch (e) {
+    console.error("Font load failed:", e);
+  }
 
   return new ImageResponse(
     (
@@ -57,7 +71,7 @@ export default async function Image({
           justifyContent: "center",
           background: "linear-gradient(135deg, #0f172a 0%, #000000 60%, #004e69 100%)",
           color: "white",
-          fontFamily: "Noto Sans JP",
+          fontFamily: fontData ? "NotoSansJP" : "sans-serif",
           position: "relative",
         }}
       >
@@ -86,7 +100,7 @@ export default async function Image({
 
         <div
           style={{
-            fontSize: 72,
+            fontSize: 80,
             fontWeight: "bold",
             textAlign: "center",
             padding: "0 40px",
@@ -137,14 +151,16 @@ export default async function Image({
     ),
     {
       ...size,
-      fonts: [
-        {
-          name: "Noto Sans JP",
-          data: fontData,
-          style: "normal",
-          weight: 700,
-        },
-      ],
+      fonts: fontData
+        ? [
+            {
+              name: "NotoSansJP",
+              data: fontData,
+              style: "normal" as const,
+              weight: 700,
+            },
+          ]
+        : [],
     }
   );
 }
