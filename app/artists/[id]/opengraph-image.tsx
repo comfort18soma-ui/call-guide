@@ -1,13 +1,12 @@
 import { ImageResponse } from "next/og";
 import { createClient } from "@supabase/supabase-js";
 
-export const runtime = "edge";
 export const alt = "Call Guide Artist Detail";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 async function loadGoogleFont(text: string): Promise<ArrayBuffer | null> {
-  const url = `https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=${encodeURIComponent(text)}`;
+  const url = `https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@700&text=${encodeURIComponent(text)}`;
 
   try {
     const css = await fetch(url, {
@@ -17,10 +16,12 @@ async function loadGoogleFont(text: string): Promise<ArrayBuffer | null> {
       },
     }).then((res) => res.text());
 
-    const resource = css.match(/src: url\((?:'|")?([^'"]+)(?:'|")?\)/);
+    const resource = css.match(
+      /src: url\((.+)\) format\('(opentype|truetype|woff|woff2)'\)/
+    );
 
     if (resource && resource[1]) {
-      const fontUrl = resource[1].trim();
+      const fontUrl = resource[1].replace(/^["']|["']$/g, "").trim();
       const response = await fetch(fontUrl);
       if (response.status === 200) return response.arrayBuffer();
     }
@@ -68,7 +69,7 @@ export default async function Image({
           background:
             "linear-gradient(135deg, #0f172a 0%, #000000 50%, #581c87 100%)",
           color: "white",
-          fontFamily: fontData ? "NotoSansJP" : "sans-serif",
+          fontFamily: fontData ? "IBM Plex Sans JP, sans-serif" : "sans-serif",
           position: "relative",
         }}
       >
@@ -174,7 +175,14 @@ export default async function Image({
     {
       ...size,
       fonts: fontData
-        ? [{ name: "NotoSansJP", data: fontData, style: "normal" as const, weight: 700 }]
+        ? [
+            {
+              name: "IBM Plex Sans JP",
+              data: fontData,
+              style: "normal" as const,
+              weight: 700,
+            },
+          ]
         : [],
     }
   );
