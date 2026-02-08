@@ -1,38 +1,13 @@
 import { ImageResponse } from "next/og";
 import { createClient } from "@supabase/supabase-js";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 export const alt = "Call Guide Song Detail";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-async function loadGoogleFont(text: string): Promise<ArrayBuffer | null> {
-  const uniqueChars = Array.from(new Set(text.split(""))).sort().join("");
-  const url = `https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=${encodeURIComponent(uniqueChars)}`;
-
-  try {
-    const css = await fetch(url, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36",
-      },
-      cache: "no-store",
-    }).then((res) => res.text());
-
-    const resource = css.match(
-      /src: url\((.+)\) format\('(opentype|truetype|woff|woff2)'\)/
-    );
-
-    if (resource && resource[1]) {
-      const fontUrl = resource[1].replace(/^["']|["']$/g, "").trim();
-      const response = await fetch(fontUrl);
-      if (response.status === 200) return response.arrayBuffer();
-    }
-  } catch (e) {
-    console.error("Font load failed:", e);
-  }
-  return null;
-}
+const FONT_URL =
+  "https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTF/Japanese/NotoSansCJKjp-Bold.otf";
 
 export default async function Image({
   params,
@@ -41,9 +16,17 @@ export default async function Image({
 }) {
   const { id: songId } = await params;
 
+  let fontData: ArrayBuffer | null = null;
+  try {
+    const res = await fetch(FONT_URL);
+    if (res.ok) fontData = await res.arrayBuffer();
+  } catch (e) {
+    console.error("Font load failed:", e);
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  let title = "Call Guide";
+  let title = "No Title";
   let artistName = "Unknown Artist";
 
   if (supabaseUrl && supabaseAnonKey) {
@@ -53,13 +36,33 @@ export default async function Image({
       .select("title, artists(name)")
       .eq("id", songId)
       .single();
-    const row = song as { title?: string; artists?: { name?: string } | null } | null;
-    if (row?.title) title = row.title;
-    if (row?.artists?.name) artistName = row.artists.name;
-  }
 
-  const baseText = title + artistName + "コール表CallGuideCG≒";
-  const fontData = await loadGoogleFont(baseText);
+    if (!song) {
+      return new ImageResponse(
+        (
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              background: "#333",
+              color: "#fff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 40,
+            }}
+          >
+            Not Found
+          </div>
+        ),
+        { ...size }
+      );
+    }
+
+    const row = song as { title?: string; artists?: { name?: string } | null };
+    title = row.title ?? "No Title";
+    artistName = row.artists?.name ?? "Unknown Artist";
+  }
 
   return new ImageResponse(
     (
@@ -69,86 +72,71 @@ export default async function Image({
           width: "100%",
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          background:
-            "linear-gradient(135deg, #0f172a 0%, #000000 60%, #004e69 100%)",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          padding: "80px",
+          backgroundColor: "#1a1a1a",
           color: "white",
-          fontFamily: fontData ? "NotoSansJP" : "sans-serif",
-          position: "relative",
+          fontFamily: fontData ? "NotoSansCJKjp" : "sans-serif",
         }}
       >
-        <div
-          style={{
-            position: "absolute",
-            top: "-20%",
-            left: "-10%",
-            width: "600px",
-            height: "600px",
-            background:
-              "radial-gradient(circle, rgba(0,168,225,0.2) 0%, rgba(0,0,0,0) 70%)",
-            borderRadius: "50%",
-          }}
-        />
-
-        <div
-          style={{
-            fontSize: 36,
-            color: "#94a3b8",
-            marginBottom: 20,
-          }}
-        >
-          {artistName}
-        </div>
-
-        <div
-          style={{
-            fontSize: 100,
-            fontWeight: "bold",
-            textAlign: "center",
-            padding: "0 40px",
-            lineHeight: 1.1,
-            maxWidth: "1000px",
-            wordBreak: "break-word",
-            textShadow: "0 4px 10px rgba(0,0,0,0.5)",
-          }}
-        >
-          {title}
-        </div>
-
-        <div
-          style={{
-            marginTop: 30,
-            background: "white",
-            color: "black",
-            padding: "10px 40px",
-            borderRadius: "50px",
-            fontSize: 32,
-            fontWeight: "bold",
-            boxShadow: "0 4px 15px rgba(255,255,255,0.3)",
-          }}
-        >
-          コール表
-        </div>
-
-        <div
-          style={{
-            position: "absolute",
-            bottom: 40,
-            right: 40,
-            display: "flex",
-            alignItems: "center",
-          }}
-        >
-          <span
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <div
             style={{
-              fontSize: 28,
+              fontSize: 100,
               fontWeight: "bold",
-              color: "#e2e8f0",
+              lineHeight: 1.1,
+              marginBottom: "20px",
+              wordBreak: "break-word",
             }}
           >
-            Call Guide
-          </span>
+            {title}
+          </div>
+          <div
+            style={{
+              fontSize: 48,
+              color: "#aaa",
+            }}
+          >
+            {artistName}
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            width: "100%",
+            borderTop: "2px solid #555",
+            paddingTop: "30px",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "60px",
+              height: "60px",
+              backgroundColor: "white",
+              color: "black",
+              borderRadius: "8px",
+              fontSize: 28,
+              fontWeight: "bold",
+              marginRight: "20px",
+            }}
+          >
+            CG
+          </div>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <span style={{ fontSize: 32, fontWeight: "bold" }}>Call Guide</span>
+            <span style={{ fontSize: 20, color: "#aaa" }}>コール表</span>
+          </div>
         </div>
       </div>
     ),
@@ -157,7 +145,7 @@ export default async function Image({
       fonts: fontData
         ? [
             {
-              name: "NotoSansJP",
+              name: "NotoSansCJKjp",
               data: fontData,
               style: "normal" as const,
               weight: 700,
