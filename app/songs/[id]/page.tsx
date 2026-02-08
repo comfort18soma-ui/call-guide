@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
-import { Loader2, Plus, User, Heart, Youtube, ExternalLink, Music } from "lucide-react";
+import { Loader2, Plus, User, Heart, Youtube, Pencil } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
+import { useUserRole } from "@/hooks/useUserRole";
+import { EditSongModal } from "@/components/EditSongModal";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -55,14 +57,11 @@ export default function SongDetailPage() {
   const [bookmarkedChartIds, setBookmarkedChartIds] = useState<Set<string>>(new Set());
   const [sortOrder, setSortOrder] = useState<"popular" | "newest">("popular");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const { role } = useUserRole();
 
-  useEffect(() => {
-    if (!id) {
-      setLoadingSong(false);
-      return;
-    }
-
-    const fetchSong = async () => {
+  const fetchSong = useCallback(async () => {
+    if (!id) return;
       setLoadingSong(true);
       setError(null);
       try {
@@ -95,10 +94,15 @@ export default function SongDetailPage() {
       } finally {
         setLoadingSong(false);
       }
-    };
-
-    void fetchSong();
   }, [id]);
+
+  useEffect(() => {
+    if (!id) {
+      setLoadingSong(false);
+      return;
+    }
+    void fetchSong();
+  }, [id, fetchSong]);
 
   useEffect(() => {
     if (!id) {
@@ -347,25 +351,38 @@ export default function SongDetailPage() {
         {/* ヘッダー: 曲名・アーティスト・リンク・コール作成ボタン */}
         <header className="mb-5">
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl font-semibold tracking-tight text-zinc-100">
-              {song.title}
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-semibold tracking-tight text-zinc-100">
+                {song.title}
+              </h1>
+              {role === "admin" && (
+                <button
+                  type="button"
+                  onClick={() => setEditModalOpen(true)}
+                  className="shrink-0 rounded-full p-2 text-zinc-400 transition-colors hover:bg-white/10 hover:text-zinc-200 active:scale-95"
+                  aria-label="楽曲を編集"
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
+              )}
+            </div>
             <Link
               href={artistHref}
               className="mt-1 inline-block text-sm text-zinc-400 hover:underline hover:text-zinc-200"
             >
               {song.artist_name}
             </Link>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
+            <div className="mt-2 flex flex-wrap items-center gap-3">
               {song.youtube_url && (
                 <a
                   href={song.youtube_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex h-8 items-center gap-1.5 rounded-full border border-red-500/40 bg-red-500/10 px-2.5 text-[11px] font-medium text-red-400 transition-colors hover:bg-red-500/20"
+                  className="inline-flex h-[42px] items-center gap-2 rounded-md bg-[#FF0000] px-3 py-2 transition-opacity hover:opacity-90"
+                  aria-label="YouTubeで聴く"
                 >
-                  <Youtube className="h-4 w-4" />
-                  <span>YouTubeで聴く</span>
+                  <Youtube className="h-6 w-6 text-white" />
+                  <span className="text-sm font-medium text-white">YouTube</span>
                 </a>
               )}
               {song.apple_music_url && (
@@ -373,10 +390,14 @@ export default function SongDetailPage() {
                   href={song.apple_music_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex h-8 items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/5 px-2.5 text-[11px] font-medium text-emerald-300 transition-colors hover:bg-emerald-500/10"
+                  className="inline-flex h-[42px] items-center"
+                  aria-label="Listen on Apple Music"
                 >
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  <span>公式リンク</span>
+                  <img
+                    src="https://tools.applemediaservices.com/api/badges/listen-on-apple-music/badge/ja-jp?size=250x83&releaseDate=1553817600&h=e59146ec7b6320a91e574d797f1f727c"
+                    alt="Listen on Apple Music"
+                    className="h-[42px] w-auto"
+                  />
                 </a>
               )}
               {song.amazon_music_url && (
@@ -384,10 +405,26 @@ export default function SongDetailPage() {
                   href={song.amazon_music_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex h-8 items-center gap-1.5 rounded-full border border-cyan-500/40 bg-cyan-500/10 px-2.5 text-[11px] font-medium text-cyan-300 transition-colors hover:bg-cyan-500/20"
+                  className="flex h-[42px] items-center justify-center gap-2 rounded-[8px] bg-[#232F3E] px-4 text-white transition-opacity hover:opacity-80"
+                  aria-label="Amazon Musicで聴く"
                 >
-                  <Music className="h-3.5 w-3.5" />
-                  <span>Amazon Music</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
+                    <path d="M9 18V5l12-2v13" />
+                    <circle cx="6" cy="18" r="3" />
+                    <circle cx="18" cy="16" r="3" />
+                  </svg>
+                  <span className="text-sm font-bold">Amazon Music</span>
                 </a>
               )}
               <Button
@@ -536,6 +573,15 @@ export default function SongDetailPage() {
         >
           ← アーティスト詳細に戻る
         </Link>
+
+        <EditSongModal
+          song={song ? { id: song.id, title: song.title, youtube_url: song.youtube_url, apple_music_url: song.apple_music_url, amazon_music_url: song.amazon_music_url } : null}
+          open={editModalOpen}
+          onOpenChange={setEditModalOpen}
+          onSaved={() => {
+            void fetchSong();
+          }}
+        />
       </div>
     </main>
   );

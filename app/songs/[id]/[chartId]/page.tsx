@@ -7,10 +7,8 @@ import {
   Loader2,
   User,
   ArrowLeft,
-  ExternalLink,
   Heart,
   Share,
-  Music,
   Trash2,
 } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
@@ -428,32 +426,50 @@ export default function CallChartDetailPage() {
                   </div>
                 </div>
               )}
-              {(song.apple_music_url || song.amazon_music_url) && (
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  {song.apple_music_url && (
-                    <a
-                      href={song.apple_music_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex h-8 items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/5 px-2.5 text-[11px] font-medium text-emerald-300 transition-colors hover:bg-emerald-500/10"
+              <div className="mt-2 flex flex-wrap items-center gap-3">
+                {song.apple_music_url && (
+                  <a
+                    href={song.apple_music_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex h-[42px] items-center"
+                    aria-label="Listen on Apple Music"
+                  >
+                    <img
+                      src="https://tools.applemediaservices.com/api/badges/listen-on-apple-music/badge/ja-jp?size=250x83&releaseDate=1553817600&h=e59146ec7b6320a91e574d797f1f727c"
+                      alt="Listen on Apple Music"
+                      className="h-[42px] w-auto"
+                    />
+                  </a>
+                )}
+                {song.amazon_music_url && (
+                  <a
+                    href={song.amazon_music_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-[42px] items-center justify-center gap-2 rounded-[8px] bg-[#232F3E] px-4 text-white transition-opacity hover:opacity-80"
+                    aria-label="Amazon Musicで聴く"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden
                     >
-                      <ExternalLink className="h-3.5 w-3.5" />
-                      <span>公式リンク</span>
-                    </a>
-                  )}
-                  {song.amazon_music_url && (
-                    <a
-                      href={song.amazon_music_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex h-8 items-center gap-1.5 rounded-full border border-cyan-500/40 bg-cyan-500/10 px-2.5 text-[11px] font-medium text-cyan-300 transition-colors hover:bg-cyan-500/20"
-                    >
-                      <Music className="h-3.5 w-3.5" />
-                      <span>Amazon Music</span>
-                    </a>
-                  )}
-                </div>
-              )}
+                      <path d="M9 18V5l12-2v13" />
+                      <circle cx="6" cy="18" r="3" />
+                      <circle cx="18" cy="16" r="3" />
+                    </svg>
+                    <span className="text-sm font-bold">Amazon Music</span>
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         </header>

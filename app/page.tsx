@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Megaphone, ChevronRight, Reply, ListChecks, Music, Headphones } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import { Header } from "@/components/header";
+import AmazonBanner from "@/components/AmazonBanner";
 import { useUserRole } from "@/hooks/useUserRole";
 import { HorizontalScrollList } from "@/components/horizontal-scroll-list";
 
@@ -167,6 +168,8 @@ export default function HomePage() {
 
       <section className="flex-1 px-3 py-4">
         <div className="mx-auto max-w-md">
+          <AmazonBanner />
+
           {/* 最新のお知らせリストのみ表示 */}
           <section className="rounded-lg border border-zinc-800 bg-zinc-900/40 p-3">
             <div className="mb-2 flex items-center justify-between">
