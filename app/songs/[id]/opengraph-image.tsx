@@ -1,13 +1,38 @@
 import { ImageResponse } from "next/og";
 import { createClient } from "@supabase/supabase-js";
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 export const alt = "Call Guide Song Detail";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-const FONT_URL =
-  "https://raw.githubusercontent.com/googlefonts/zen-kaku-gothic-new/main/fonts/ttf/ZenKakuGothicNew-Black.ttf";
+async function loadGoogleFont(text: string): Promise<ArrayBuffer | null> {
+  const uniqueChars = Array.from(new Set(text.split(""))).sort().join("");
+  const url = `https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=${encodeURIComponent(uniqueChars)}`;
+
+  try {
+    const css = await fetch(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36",
+      },
+      cache: "no-store",
+    }).then((res) => res.text());
+
+    const resource = css.match(
+      /src: url\((.+)\) format\('(opentype|truetype|woff|woff2)'\)/
+    );
+
+    if (resource && resource[1]) {
+      const fontUrl = resource[1].replace(/^["']|["']$/g, "").trim();
+      const response = await fetch(fontUrl);
+      if (response.status === 200) return response.arrayBuffer();
+    }
+  } catch (e) {
+    console.error("Font load failed:", e);
+  }
+  return null;
+}
 
 export default async function Image({
   params,
@@ -15,14 +40,6 @@ export default async function Image({
   params: Promise<{ id: string }>;
 }) {
   const { id: songId } = await params;
-
-  let fontData: ArrayBuffer | null = null;
-  try {
-    const res = await fetch(FONT_URL);
-    if (res.ok) fontData = await res.arrayBuffer();
-  } catch (e) {
-    console.error("Font load failed:", e);
-  }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -41,6 +58,9 @@ export default async function Image({
     if (row?.artists?.name) artistName = row.artists.name;
   }
 
+  const baseText = title + artistName + "コール表CallGuideCG≒";
+  const fontData = await loadGoogleFont(baseText);
+
   return new ImageResponse(
     (
       <div
@@ -54,7 +74,7 @@ export default async function Image({
           background:
             "linear-gradient(135deg, #0f172a 0%, #000000 60%, #004e69 100%)",
           color: "white",
-          fontFamily: fontData ? "ZenKakuGothicNew" : "sans-serif",
+          fontFamily: fontData ? "NotoSansJP" : "sans-serif",
           position: "relative",
         }}
       >
@@ -137,10 +157,10 @@ export default async function Image({
       fonts: fontData
         ? [
             {
-              name: "ZenKakuGothicNew",
+              name: "NotoSansJP",
               data: fontData,
               style: "normal" as const,
-              weight: 400,
+              weight: 700,
             },
           ]
         : [],
