@@ -1,7 +1,6 @@
 import { ImageResponse } from 'next/og'
 import { createClient } from '@supabase/supabase-js'
 
-// フォントファイルを扱うため Node.js ランタイムを使用
 export const runtime = 'nodejs'
 
 export const alt = 'Call Guide Song Detail'
@@ -12,15 +11,36 @@ type Props = {
   params: Promise<{ id: string }>
 }
 
-const ZEN_KAKU_FONT_URL =
-  'https://raw.githubusercontent.com/googlefonts/zen-kaku-gothic-new/main/fonts/ttf/ZenKakuGothicNew-Bold.ttf'
+// フォントローダー (IBM Plex Sans JP)
+async function loadGoogleFont(text: string) {
+  // 1. 重複文字を削除してURLエンコード
+  const uniqueChars = Array.from(new Set(text.split(''))).sort().join('')
+  const url = `https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@700&text=${encodeURIComponent(uniqueChars)}`
+
+  try {
+    const css = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36'
+      },
+    }).then((res) => res.text())
+
+    // 2. CSSからURLを抽出（引用符の有無に関わらず正しく取得する正規表現）
+    const resource = css.match(/src: url\((?:'|")?([^'"]+)(?:'|")?\)/)
+
+    if (resource && resource[1]) {
+      const response = await fetch(resource[1])
+      if (response.status === 200) {
+        return await response.arrayBuffer()
+      }
+    }
+  } catch (e) {
+    console.error("Font load failed:", e)
+  }
+  return null
+}
 
 export default async function Image({ params }: Props) {
-  // ID取得 (Next.js 15対応)
   const { id: songId } = await params
-
-  // 1. フォント取得: Zen Kaku Gothic New (Bold) の TTFファイルを直接取得
-  const fontData = await fetch(ZEN_KAKU_FONT_URL).then((res) => res.arrayBuffer())
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -46,6 +66,13 @@ export default async function Image({ params }: Props) {
   const artistName = artistNameFromRelation ?? song.artist ?? 'Unknown Artist'
   const subTitle = 'コール表'
 
+  // ★「≒」などの記号を確実に含める
+  const textToRender = title + artistName + subTitle + "CallGuideCG≒"
+  const fontData = await loadGoogleFont(textToRender)
+
+  // フォント取得に失敗しても sans-serif で最低限表示する
+  const fontFamily = fontData ? '"IBM Plex Sans JP"' : 'sans-serif'
+
   return new ImageResponse(
     (
       <div
@@ -57,9 +84,8 @@ export default async function Image({ params }: Props) {
           alignItems: 'flex-start',
           justifyContent: 'center',
           padding: '80px',
-          backgroundColor: '#ffffff', // 白背景
-          color: '#333333',
-          fontFamily: '"ZenKakuGothicNew"',
+          backgroundColor: '#ffffff',
+          color: '#000000',
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
@@ -68,23 +94,24 @@ export default async function Image({ params }: Props) {
             fontSize: 90,
             fontWeight: 'bold',
             lineHeight: 1.1,
+            fontFamily: fontFamily,
             wordBreak: 'break-word',
             marginBottom: '20px',
-            color: '#000000',
-            letterSpacing: '-0.03em',
+            letterSpacing: '-0.02em',
           }}>
             {title}
           </div>
 
-          {/* サブタイトル: コール表 */}
+          {/* コール表バッジ */}
           <div style={{
-            fontSize: 40,
+            fontSize: 36,
             fontWeight: 'bold',
+            fontFamily: fontFamily,
             marginBottom: '30px',
-            backgroundColor: '#f4f4f4',
-            color: '#000',
-            padding: '8px 24px',
-            borderRadius: '6px',
+            backgroundColor: '#000',
+            color: '#fff',
+            padding: '4px 20px',
+            borderRadius: '4px',
             alignSelf: 'flex-start',
           }}>
             {subTitle}
@@ -93,7 +120,8 @@ export default async function Image({ params }: Props) {
           {/* アーティスト名 */}
           <div style={{
             fontSize: 40,
-            color: '#666666',
+            color: '#555555',
+            fontFamily: fontFamily,
             fontWeight: 'normal',
           }}>
             {artistName}
@@ -117,31 +145,23 @@ export default async function Image({ params }: Props) {
             justifyContent: 'center',
             backgroundColor: '#000',
             color: '#fff',
-            width: '44px',
-            height: '44px',
-            fontSize: 20,
+            width: '40px',
+            height: '40px',
+            fontSize: 18,
             fontWeight: 'bold',
-            marginRight: '16px',
+            marginRight: '12px',
             borderRadius: '4px',
+            fontFamily: fontFamily,
           }}>
             CG
           </div>
-          <div style={{ fontSize: 24, fontWeight: 'bold', color: '#000' }}>
-            Call Guide
-          </div>
+          <div style={{ fontSize: 24, fontWeight: 'bold', fontFamily: fontFamily }}>Call Guide</div>
         </div>
       </div>
     ),
     {
       ...size,
-      fonts: [
-        {
-          name: 'ZenKakuGothicNew',
-          data: fontData,
-          style: 'normal',
-          weight: 700,
-        },
-      ],
+      fonts: fontData ? [{ name: 'IBM Plex Sans JP', data: fontData, style: 'normal', weight: 700 }] : [],
     }
   )
 }
