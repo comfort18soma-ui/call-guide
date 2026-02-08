@@ -1,28 +1,33 @@
-export const runtime = "edge";
-
 import { ImageResponse } from "next/og";
 import { createClient } from "@supabase/supabase-js";
 
+export const runtime = "edge";
 export const alt = "Call Guide Artist Detail";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 async function loadGoogleFont(text: string): Promise<ArrayBuffer | null> {
   const url = `https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=${encodeURIComponent(text)}`;
-  const css = await fetch(url, {
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36",
-    },
-  }).then((res) => res.text());
 
-  const resource = css.match(
-    /src:\s*url\((.+)\)\s+format\('(opentype|truetype|woff2|woff)'\)/
-  );
-  if (resource) {
-    const fontUrl = resource[1].replace(/^["']|["']$/g, "");
-    const response = await fetch(fontUrl);
-    if (response.status === 200) return response.arrayBuffer();
+  try {
+    const css = await fetch(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36",
+      },
+    }).then((res) => res.text());
+
+    const resource = css.match(
+      /src: url\((.+)\) format\('(opentype|truetype|woff|woff2)'\)/
+    );
+
+    if (resource) {
+      const fontUrl = resource[1].replace(/^["']|["']$/g, "");
+      const response = await fetch(fontUrl);
+      if (response.status === 200) return response.arrayBuffer();
+    }
+  } catch (e) {
+    console.error("Font load failed:", e);
   }
   return null;
 }
@@ -49,13 +54,8 @@ export default async function Image({
     if (row?.name) artistName = row.name;
   }
 
-  const textToRender = artistName + "コール表楽曲一覧CallGuideIDOL";
-  let fontData: ArrayBuffer | null = null;
-  try {
-    fontData = await loadGoogleFont(textToRender);
-  } catch (e) {
-    console.error(e);
-  }
+  const textToRender = artistName + "コール表楽曲一覧CallGuideIDOLCG";
+  const fontData = await loadGoogleFont(textToRender);
 
   return new ImageResponse(
     (
@@ -100,7 +100,7 @@ export default async function Image({
 
         <div
           style={{
-            fontSize: 110,
+            fontSize: 120,
             fontWeight: "bold",
             textAlign: "center",
             padding: "0 40px",
@@ -109,6 +109,8 @@ export default async function Image({
             wordBreak: "break-word",
             textShadow: "0 4px 10px rgba(0,0,0,0.6)",
             marginBottom: 40,
+            display: "flex",
+            justifyContent: "center",
           }}
         >
           {artistName}

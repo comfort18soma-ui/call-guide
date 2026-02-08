@@ -1,30 +1,35 @@
-export const runtime = "edge";
-
 import { ImageResponse } from "next/og";
 import { createClient } from "@supabase/supabase-js";
 
+export const runtime = "edge";
 export const alt = "Call Guide Song Detail";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-async function loadGoogleFont(text: string): Promise<ArrayBuffer> {
+async function loadGoogleFont(text: string): Promise<ArrayBuffer | null> {
   const url = `https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=${encodeURIComponent(text)}`;
-  const css = await fetch(url, {
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36",
-    },
-  }).then((res) => res.text());
 
-  const resource = css.match(
-    /src:\s*url\((.+)\)\s+format\('(opentype|truetype|woff2|woff)'\)/
-  );
-  if (resource) {
-    const fontUrl = resource[1].replace(/^["']|["']$/g, "");
-    const response = await fetch(fontUrl);
-    if (response.status === 200) return response.arrayBuffer();
+  try {
+    const css = await fetch(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36",
+      },
+    }).then((res) => res.text());
+
+    const resource = css.match(
+      /src: url\((.+)\) format\('(opentype|truetype|woff|woff2)'\)/
+    );
+
+    if (resource) {
+      const fontUrl = resource[1].replace(/^["']|["']$/g, "");
+      const response = await fetch(fontUrl);
+      if (response.status === 200) return response.arrayBuffer();
+    }
+  } catch (e) {
+    console.error("Font load failed:", e);
   }
-  throw new Error("Failed to load font data");
+  return null;
 }
 
 export default async function Image({
@@ -51,13 +56,8 @@ export default async function Image({
     if (row?.artists?.name) artistName = row.artists.name;
   }
 
-  const textToRender = title + artistName + "コール表CallGuide";
-  let fontData: ArrayBuffer | null = null;
-  try {
-    fontData = await loadGoogleFont(textToRender);
-  } catch (e) {
-    console.error("Font load failed:", e);
-  }
+  const textToRender = title + artistName + "コール表CallGuideCG";
+  const fontData = await loadGoogleFont(textToRender);
 
   return new ImageResponse(
     (
@@ -69,7 +69,8 @@ export default async function Image({
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #0f172a 0%, #000000 60%, #004e69 100%)",
+          background:
+            "linear-gradient(135deg, #0f172a 0%, #000000 60%, #004e69 100%)",
           color: "white",
           fontFamily: fontData ? "NotoSansJP" : "sans-serif",
           position: "relative",
