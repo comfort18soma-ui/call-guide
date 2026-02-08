@@ -1,6 +1,7 @@
 import { ImageResponse } from 'next/og'
 import { createClient } from '@supabase/supabase-js'
 
+// 安定稼働のためにNode.jsランタイムを使用
 export const runtime = 'nodejs'
 
 export const alt = 'Call Guide Artist Detail'
@@ -11,18 +12,21 @@ type Props = {
   params: Promise<{ id: string }>
 }
 
+// Google Fonts APIから、必要な文字だけの軽量フォントを取得する関数
 async function loadGoogleFont(text: string) {
+  // 文字の重複を削除し、URLエンコード
   const uniqueChars = Array.from(new Set(text.split(''))).sort().join('')
-  const url = `https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@700&text=${encodeURIComponent(uniqueChars)}`
+  const url = `https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=${encodeURIComponent(uniqueChars)}`
 
   try {
     const css = await fetch(url, {
       headers: {
+        // WOFF2形式を取得するためにUser-Agentを偽装
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36'
       },
     }).then((res) => res.text())
 
-    // 引用符対応の正規表現
+    // CSSからフォントファイルのURLを抽出（引用符対応）
     const resource = css.match(/src: url\((?:'|")?([^'"]+)(?:'|")?\)/)
 
     if (resource && resource[1]) {
@@ -38,6 +42,7 @@ async function loadGoogleFont(text: string) {
 }
 
 export default async function Image({ params }: Props) {
+  // Next.js 15対応: ID待機
   const { id: artistId } = await params
 
   const supabase = createClient(
@@ -46,16 +51,19 @@ export default async function Image({ params }: Props) {
   )
 
   const { data: artist } = await supabase
-    .from('artists')
+    .from('artists') // または groups
     .select('name')
     .eq('id', artistId)
     .single()
 
   const artistName = artist?.name ?? 'Unknown Artist'
 
+  // ★重要: 表示する文字セットに「≒」などの記号を必ず含める
   const textToRender = artistName + "CallGuideCG≒"
   const fontData = await loadGoogleFont(textToRender)
-  const fontFamily = fontData ? '"IBM Plex Sans JP"' : 'sans-serif'
+
+  // フォント取得に失敗しても、とりあえず表示はさせるためのフォールバック
+  const fontFamily = fontData ? '"Noto Sans JP"' : 'sans-serif'
 
   return new ImageResponse(
     (
@@ -68,14 +76,15 @@ export default async function Image({ params }: Props) {
           alignItems: 'flex-start',
           justifyContent: 'center',
           padding: '80px',
-          backgroundColor: '#ffffff',
-          color: '#000000',
+          backgroundColor: '#ffffff', // 白背景
+          color: '#000000', // 黒文字
         }}
       >
+        {/* アーティスト名 */}
         <div style={{
           fontSize: 100,
           fontWeight: 'bold',
-          lineHeight: 1.1,
+          lineHeight: 1.2,
           fontFamily: fontFamily,
           wordBreak: 'break-word',
           marginBottom: '60px',
@@ -84,6 +93,7 @@ export default async function Image({ params }: Props) {
           {artistName}
         </div>
 
+        {/* フッター */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -100,11 +110,11 @@ export default async function Image({ params }: Props) {
             justifyContent: 'center',
             backgroundColor: '#000',
             color: '#fff',
-            width: '40px',
-            height: '40px',
-            fontSize: 18,
+            width: '44px',
+            height: '44px',
+            fontSize: 20,
             fontWeight: 'bold',
-            marginRight: '12px',
+            marginRight: '16px',
             borderRadius: '4px',
             fontFamily: fontFamily,
           }}>
@@ -116,7 +126,7 @@ export default async function Image({ params }: Props) {
     ),
     {
       ...size,
-      fonts: fontData ? [{ name: 'IBM Plex Sans JP', data: fontData, style: 'normal', weight: 700 }] : [],
+      fonts: fontData ? [{ name: 'Noto Sans JP', data: fontData, style: 'normal', weight: 700 }] : [],
     }
   )
 }
