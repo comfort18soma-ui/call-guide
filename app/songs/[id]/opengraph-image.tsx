@@ -1,18 +1,19 @@
 import { ImageResponse } from "next/og";
 import { createClient } from "@supabase/supabase-js";
 
+export const runtime = "edge";
 export const alt = "Call Guide Song Detail";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 async function loadGoogleFont(text: string): Promise<ArrayBuffer | null> {
-  const url = `https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@700&text=${encodeURIComponent(text)}`;
+  const url = `https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@700&text=${encodeURIComponent(text)}`;
 
   try {
     const css = await fetch(url, {
       headers: {
         "User-Agent":
-          "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36",
       },
     }).then((res) => res.text());
 
@@ -71,7 +72,7 @@ export default async function Image({
           background:
             "linear-gradient(135deg, #0f172a 0%, #000000 60%, #004e69 100%)",
           color: "white",
-          fontFamily: fontData ? "IBM Plex Sans JP, sans-serif" : "sans-serif",
+          fontFamily: fontData ? "Zen Kaku Gothic New, sans-serif" : "sans-serif",
           position: "relative",
         }}
       >
@@ -154,7 +155,7 @@ export default async function Image({
       fonts: fontData
         ? [
             {
-              name: "IBM Plex Sans JP",
+              name: "Zen Kaku Gothic New",
               data: fontData,
               style: "normal" as const,
               weight: 700,
