@@ -155,7 +155,7 @@ export default function AdminSongsPage() {
     try {
       const artistIdNumber = Number(artistIdInput);
 
-      const amazonUrl = convertAmazonLink(amazonMusicInput.trim()) ?? amazonMusicInput.trim() || null;
+      const amazonUrl = (convertAmazonLink(amazonMusicInput.trim()) ?? amazonMusicInput.trim()) || null;
 
       if (editingSong) {
         const { error } = await supabase
