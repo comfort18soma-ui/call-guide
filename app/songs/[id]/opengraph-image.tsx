@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 import { createClient } from '@supabase/supabase-js'
 
-// ★APIを使うためにNode.jsランタイムを指定（これで落ちません）
+// フォントファイルを扱うため Node.js ランタイムを使用
 export const runtime = 'nodejs'
 
 export const alt = 'Call Guide Song Detail'
@@ -12,34 +12,15 @@ type Props = {
   params: Promise<{ id: string }>
 }
 
-// フォントローダー: Noto Sans JP をAPI経由で取得（文字化け防止）
-async function loadGoogleFont(text: string) {
-  const uniqueChars = Array.from(new Set(text.split(''))).sort().join('')
-  const url = `https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=${encodeURIComponent(uniqueChars)}`
-
-  try {
-    const css = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36'
-      },
-    }).then((res) => res.text())
-
-    const resource = css.match(/src: url\((.+)\) format\('(opentype|truetype|woff|woff2)'\)/)
-
-    if (resource && resource[1]) {
-      const response = await fetch(resource[1])
-      if (response.status === 200) {
-        return await response.arrayBuffer()
-      }
-    }
-  } catch (e) {
-    console.error("Font load failed:", e)
-  }
-  return null
-}
+const ZEN_KAKU_FONT_URL =
+  'https://raw.githubusercontent.com/googlefonts/zen-kaku-gothic-new/main/fonts/ttf/ZenKakuGothicNew-Bold.ttf'
 
 export default async function Image({ params }: Props) {
+  // ID取得 (Next.js 15対応)
   const { id: songId } = await params
+
+  // 1. フォント取得: Zen Kaku Gothic New (Bold) の TTFファイルを直接取得
+  const fontData = await fetch(ZEN_KAKU_FONT_URL).then((res) => res.arrayBuffer())
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -65,11 +46,6 @@ export default async function Image({ params }: Props) {
   const artistName = artistNameFromRelation ?? song.artist ?? 'Unknown Artist'
   const subTitle = 'コール表'
 
-  // ★「≒」を確実に含める
-  const textToRender = title + artistName + subTitle + "CallGuideCG≒"
-  const fontData = await loadGoogleFont(textToRender)
-  const fontFamily = fontData ? '"Noto Sans JP"' : 'sans-serif'
-
   return new ImageResponse(
     (
       <div
@@ -82,7 +58,8 @@ export default async function Image({ params }: Props) {
           justifyContent: 'center',
           padding: '80px',
           backgroundColor: '#ffffff', // 白背景
-          color: '#000000', // 黒文字
+          color: '#333333',
+          fontFamily: '"ZenKakuGothicNew"',
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
@@ -91,24 +68,23 @@ export default async function Image({ params }: Props) {
             fontSize: 90,
             fontWeight: 'bold',
             lineHeight: 1.1,
-            fontFamily: fontFamily,
             wordBreak: 'break-word',
             marginBottom: '20px',
-            letterSpacing: '-0.02em',
+            color: '#000000',
+            letterSpacing: '-0.03em',
           }}>
             {title}
           </div>
 
-          {/* コール表バッジ */}
+          {/* サブタイトル: コール表 */}
           <div style={{
             fontSize: 40,
             fontWeight: 'bold',
-            fontFamily: fontFamily,
             marginBottom: '30px',
-            backgroundColor: '#000', // 黒背景
-            color: '#fff', // 白文字
-            padding: '4px 24px',
-            borderRadius: '4px',
+            backgroundColor: '#f4f4f4',
+            color: '#000',
+            padding: '8px 24px',
+            borderRadius: '6px',
             alignSelf: 'flex-start',
           }}>
             {subTitle}
@@ -118,7 +94,6 @@ export default async function Image({ params }: Props) {
           <div style={{
             fontSize: 40,
             color: '#666666',
-            fontFamily: fontFamily,
             fontWeight: 'normal',
           }}>
             {artistName}
@@ -142,23 +117,31 @@ export default async function Image({ params }: Props) {
             justifyContent: 'center',
             backgroundColor: '#000',
             color: '#fff',
-            width: '40px',
-            height: '40px',
-            fontSize: 18,
+            width: '44px',
+            height: '44px',
+            fontSize: 20,
             fontWeight: 'bold',
-            marginRight: '12px',
+            marginRight: '16px',
             borderRadius: '4px',
-            fontFamily: fontFamily,
           }}>
             CG
           </div>
-          <div style={{ fontSize: 24, fontWeight: 'bold', fontFamily: fontFamily }}>Call Guide</div>
+          <div style={{ fontSize: 24, fontWeight: 'bold', color: '#000' }}>
+            Call Guide
+          </div>
         </div>
       </div>
     ),
     {
       ...size,
-      fonts: fontData ? [{ name: 'Noto Sans JP', data: fontData, style: 'normal', weight: 700 }] : [],
+      fonts: [
+        {
+          name: 'ZenKakuGothicNew',
+          data: fontData,
+          style: 'normal',
+          weight: 700,
+        },
+      ],
     }
   )
 }
