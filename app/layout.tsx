@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://callguide.jp"),
+  metadataBase: new URL("https://www.callguide.jp"),
   title: {
     default: "Call Guide - アイドルコール・MIX共有サイト",
     template: "%s | Call Guide",
@@ -22,6 +22,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Call Guide - アイドルコール・MIX共有サイト",
     description: "アイドルのコール表、mixの共有サイト",
+    url: "https://www.callguide.jp",
     siteName: "Call Guide",
     locale: "ja_JP",
     type: "website",
@@ -30,6 +31,7 @@ export const metadata: Metadata = {
     card: "summary",
     title: "Call Guide",
     description: "アイドルのコール表、mixの共有サイト",
+    creator: "@call_guide_",
   },
   manifest: "/manifest.json?v=2",
   appleWebApp: {
