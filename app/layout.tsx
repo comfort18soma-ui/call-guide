@@ -26,6 +26,11 @@ export const metadata: Metadata = {
     locale: "ja_JP",
     type: "website",
   },
+  twitter: {
+    card: "summary",
+    title: "Call Guide",
+    description: "アイドルのコール表、mixの共有サイト",
+  },
   manifest: "/manifest.json?v=2",
   appleWebApp: {
     capable: true,
