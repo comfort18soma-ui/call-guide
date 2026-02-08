@@ -1,6 +1,7 @@
 import { ImageResponse } from 'next/og'
 import { createClient } from '@supabase/supabase-js'
 
+// ★APIを使うためにNode.jsランタイムを指定（これで落ちません）
 export const runtime = 'nodejs'
 
 export const alt = 'Call Guide Song Detail'
@@ -11,12 +12,34 @@ type Props = {
   params: Promise<{ id: string }>
 }
 
+// フォントローダー: Noto Sans JP をAPI経由で取得（文字化け防止）
+async function loadGoogleFont(text: string) {
+  const uniqueChars = Array.from(new Set(text.split(''))).sort().join('')
+  const url = `https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=${encodeURIComponent(uniqueChars)}`
+
+  try {
+    const css = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36'
+      },
+    }).then((res) => res.text())
+
+    const resource = css.match(/src: url\((.+)\) format\('(opentype|truetype|woff|woff2)'\)/)
+
+    if (resource && resource[1]) {
+      const response = await fetch(resource[1])
+      if (response.status === 200) {
+        return await response.arrayBuffer()
+      }
+    }
+  } catch (e) {
+    console.error("Font load failed:", e)
+  }
+  return null
+}
+
 export default async function Image({ params }: Props) {
   const { id: songId } = await params
-
-  const fontData = await fetch(
-    `https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTF/Japanese/NotoSansCJKjp-Bold.otf`
-  ).then((res) => res.arrayBuffer())
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,20 +54,21 @@ export default async function Image({ params }: Props) {
 
   if (!song) {
     return new ImageResponse(
-      <div style={{ width: '100%', height: '100%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Not Found</div>,
+      <div style={{ width: '100%', height: '100%', background: '#fff', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40 }}>Not Found</div>,
       { ...size }
     )
   }
 
   const title = song.title ?? 'No Title'
-
-  // ★修正箇所: artistsが配列かオブジェクトか判定して名前を取得
   const artistData = song.artists as any
-  const artistNameFromRelation = Array.isArray(artistData)
-    ? artistData[0]?.name
-    : artistData?.name
-
+  const artistNameFromRelation = Array.isArray(artistData) ? artistData[0]?.name : artistData?.name
   const artistName = artistNameFromRelation ?? song.artist ?? 'Unknown Artist'
+  const subTitle = 'コール表'
+
+  // ★「≒」を確実に含める
+  const textToRender = title + artistName + subTitle + "CallGuideCG≒"
+  const fontData = await loadGoogleFont(textToRender)
+  const fontFamily = fontData ? '"Noto Sans JP"' : 'sans-serif'
 
   return new ImageResponse(
     (
@@ -57,28 +81,44 @@ export default async function Image({ params }: Props) {
           alignItems: 'flex-start',
           justifyContent: 'center',
           padding: '80px',
-          backgroundColor: '#ffffff',
-          color: '#000000',
+          backgroundColor: '#ffffff', // 白背景
+          color: '#000000', // 黒文字
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
           {/* 曲名 */}
           <div style={{
             fontSize: 90,
             fontWeight: 'bold',
             lineHeight: 1.1,
-            fontFamily: '"NotoSansCJKjp"',
+            fontFamily: fontFamily,
             wordBreak: 'break-word',
             marginBottom: '20px',
+            letterSpacing: '-0.02em',
           }}>
             {title}
+          </div>
+
+          {/* コール表バッジ */}
+          <div style={{
+            fontSize: 40,
+            fontWeight: 'bold',
+            fontFamily: fontFamily,
+            marginBottom: '30px',
+            backgroundColor: '#000', // 黒背景
+            color: '#fff', // 白文字
+            padding: '4px 24px',
+            borderRadius: '4px',
+            alignSelf: 'flex-start',
+          }}>
+            {subTitle}
           </div>
 
           {/* アーティスト名 */}
           <div style={{
             fontSize: 40,
-            color: '#555555',
-            fontFamily: '"NotoSansCJKjp"',
+            color: '#666666',
+            fontFamily: fontFamily,
             fontWeight: 'normal',
           }}>
             {artistName}
@@ -102,28 +142,23 @@ export default async function Image({ params }: Props) {
             justifyContent: 'center',
             backgroundColor: '#000',
             color: '#fff',
-            padding: '4px 12px',
-            fontSize: 24,
+            width: '40px',
+            height: '40px',
+            fontSize: 18,
             fontWeight: 'bold',
-            marginRight: '16px',
+            marginRight: '12px',
             borderRadius: '4px',
+            fontFamily: fontFamily,
           }}>
             CG
           </div>
-          <div style={{ fontSize: 24, fontWeight: 'bold' }}>Call Guide | コール表</div>
+          <div style={{ fontSize: 24, fontWeight: 'bold', fontFamily: fontFamily }}>Call Guide</div>
         </div>
       </div>
     ),
     {
       ...size,
-      fonts: [
-        {
-          name: 'NotoSansCJKjp',
-          data: fontData,
-          style: 'normal',
-          weight: 700,
-        },
-      ],
+      fonts: fontData ? [{ name: 'Noto Sans JP', data: fontData, style: 'normal', weight: 700 }] : [],
     }
   )
 }

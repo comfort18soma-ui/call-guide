@@ -1,26 +1,43 @@
 import { ImageResponse } from 'next/og'
 import { createClient } from '@supabase/supabase-js'
 
-// ★RuntimeはNode.jsを使用（フォント処理用）
 export const runtime = 'nodejs'
 
 export const alt = 'Call Guide Artist Detail'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
-// Next.js 15対応: paramsの型定義をPromiseに変更
 type Props = {
   params: Promise<{ id: string }>
 }
 
-export default async function Image({ params }: Props) {
-  // ★最重要修正: paramsをawaitしてIDを取り出す
-  const { id: artistId } = await params
+async function loadGoogleFont(text: string) {
+  const uniqueChars = Array.from(new Set(text.split(''))).sort().join('')
+  const url = `https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=${encodeURIComponent(uniqueChars)}`
 
-  // 1. フォント取得 (CDNから直接)
-  const fontData = await fetch(
-    `https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTF/Japanese/NotoSansCJKjp-Bold.otf`
-  ).then((res) => res.arrayBuffer())
+  try {
+    const css = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36'
+      },
+    }).then((res) => res.text())
+
+    const resource = css.match(/src: url\((.+)\) format\('(opentype|truetype|woff|woff2)'\)/)
+
+    if (resource && resource[1]) {
+      const response = await fetch(resource[1])
+      if (response.status === 200) {
+        return await response.arrayBuffer()
+      }
+    }
+  } catch (e) {
+    console.error("Font load failed:", e)
+  }
+  return null
+}
+
+export default async function Image({ params }: Props) {
+  const { id: artistId } = await params
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -28,12 +45,16 @@ export default async function Image({ params }: Props) {
   )
 
   const { data: artist } = await supabase
-    .from('artists') // ※テーブル名が groups の場合は修正してください
+    .from('artists')
     .select('name')
     .eq('id', artistId)
     .single()
 
   const artistName = artist?.name ?? 'Unknown Artist'
+
+  const textToRender = artistName + "CallGuideCG≒"
+  const fontData = await loadGoogleFont(textToRender)
+  const fontFamily = fontData ? '"Noto Sans JP"' : 'sans-serif'
 
   return new ImageResponse(
     (
@@ -43,69 +64,58 @@ export default async function Image({ params }: Props) {
           width: '100%',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'flex-start', // 左寄せ
-          justifyContent: 'center', // 上下中央
+          alignItems: 'flex-start',
+          justifyContent: 'center',
           padding: '80px',
-          backgroundColor: '#ffffff', // Note風の白背景
+          backgroundColor: '#ffffff',
           color: '#000000',
         }}
       >
-        {/* アーティスト名（超巨大・太字） */}
         <div style={{
-          fontSize: 110,
+          fontSize: 100,
           fontWeight: 'bold',
-          lineHeight: 1.1,
-          fontFamily: '"NotoSansCJKjp"',
+          lineHeight: 1.2,
+          fontFamily: fontFamily,
           wordBreak: 'break-word',
-          marginBottom: '60px', // ロゴとの間隔
+          marginBottom: '60px',
+          letterSpacing: '-0.02em',
         }}>
           {artistName}
         </div>
 
-        {/* フッター（ロゴ） */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           position: 'absolute',
           bottom: '60px',
           left: '80px',
+          borderTop: '2px solid #000',
+          paddingTop: '20px',
+          width: '1040px',
         }}>
-          {/* CGアイコン */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            width: '50px',
-            height: '50px',
             backgroundColor: '#000',
             color: '#fff',
-            borderRadius: '6px',
-            fontSize: 24,
+            width: '40px',
+            height: '40px',
+            fontSize: 18,
             fontWeight: 'bold',
-            marginRight: '16px',
+            marginRight: '12px',
+            borderRadius: '4px',
+            fontFamily: fontFamily,
           }}>
             CG
           </div>
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-          }}>
-            <span style={{ fontSize: 28, fontWeight: 'bold', color: '#000' }}>Call Guide</span>
-            <span style={{ fontSize: 18, color: '#666' }}>アイドルコール・MIX共有サイト</span>
-          </div>
+          <div style={{ fontSize: 24, fontWeight: 'bold', fontFamily: fontFamily }}>Call Guide</div>
         </div>
       </div>
     ),
     {
       ...size,
-      fonts: [
-        {
-          name: 'NotoSansCJKjp',
-          data: fontData,
-          style: 'normal',
-          weight: 700,
-        },
-      ],
+      fonts: fontData ? [{ name: 'Noto Sans JP', data: fontData, style: 'normal', weight: 700 }] : [],
     }
   )
 }
