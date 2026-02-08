@@ -14,14 +14,14 @@ export const metadata: Metadata = {
     default: "Call Guide - アイドルコール・MIX共有サイト",
     template: "%s | Call Guide",
   },
-  description: "アイドルのライブで使われるコール、MIX、口上をセットリストに合わせて共有・検索できるプラットフォームです。",
+  description: "アイドルのコール表、mixの共有サイト",
   icons: {
     icon: [{ url: "/icon-192.png?v=2", sizes: "192x192", type: "image/png" }],
     apple: [{ url: "/apple-touch-icon.png?v=2", sizes: "180x180", type: "image/png" }],
   },
   openGraph: {
     title: "Call Guide - アイドルコール・MIX共有サイト",
-    description: "アイドルのライブで使われるコール、MIX、口上をセットリストに合わせて共有・検索できるプラットフォームです。",
+    description: "アイドルのコール表、mixの共有サイト",
     siteName: "Call Guide",
     locale: "ja_JP",
     type: "website",
