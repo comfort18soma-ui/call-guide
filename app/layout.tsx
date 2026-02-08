@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import BottomNav from "@/components/bottom-nav";
@@ -15,7 +15,6 @@ export const metadata: Metadata = {
     template: "%s | Call Guide",
   },
   description: "アイドルのライブで使われるコール、MIX、口上をセットリストに合わせて共有・検索できるプラットフォームです。",
-  themeColor: "#000000",
   icons: {
     icon: [{ url: "/icon-192.png?v=2", sizes: "192x192", type: "image/png" }],
     apple: [{ url: "/apple-touch-icon.png?v=2", sizes: "180x180", type: "image/png" }],
@@ -33,6 +32,10 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "Call Guide",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#000000",
 };
 
 export default function RootLayout({
