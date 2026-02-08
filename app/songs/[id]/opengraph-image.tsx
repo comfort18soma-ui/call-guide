@@ -3,17 +3,20 @@ export const runtime = "edge";
 import { ImageResponse } from "next/og";
 import { createClient } from "@supabase/supabase-js";
 
-const size = { width: 1200, height: 630 };
 export const alt = "Call Guide Song Detail";
+export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-const FONT_BOLD_URL =
-  "https://fonts.gstatic.com/s/notosansjp/v52/-F6jfjtqLzI2JPCgQBnw7HFyzSD-AsregP8VFBEj75vY3w.woff2";
-
-async function loadNotoSansJPBold(): Promise<ArrayBuffer> {
-  const res = await fetch(FONT_BOLD_URL);
-  if (!res.ok) throw new Error("Failed to load Noto Sans JP Bold");
-  return res.arrayBuffer();
+async function loadGoogleFont(text: string): Promise<ArrayBuffer> {
+  const url = `https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=${encodeURIComponent(text)}`;
+  const css = await fetch(url).then((res) => res.text());
+  const match = css.match(/src:\s*url\(([^)]+)\)\s+format\('(woff2|opentype|truetype)'\)/);
+  if (match) {
+    const fontUrl = match[1].replace(/^["']|["']$/g, "");
+    const response = await fetch(fontUrl);
+    if (response.ok) return response.arrayBuffer();
+  }
+  throw new Error("Failed to load font data");
 }
 
 export default async function Image({
@@ -22,12 +25,10 @@ export default async function Image({
   params: Promise<{ id: string }>;
 }) {
   const { id: songId } = await params;
-  const fontData = await loadNotoSansJPBold();
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  let title = "Unknown Song";
+  let title = "Call Guide";
   let artistName = "Unknown Artist";
 
   if (supabaseUrl && supabaseAnonKey) {
@@ -37,11 +38,12 @@ export default async function Image({
       .select("title, artists(name)")
       .eq("id", songId)
       .single();
-
     const row = song as { title?: string; artists?: { name?: string } | null } | null;
     if (row?.title) title = row.title;
     if (row?.artists?.name) artistName = row.artists.name;
   }
+
+  const fontData = await loadGoogleFont(title + artistName + "コール表CallGuide");
 
   return new ImageResponse(
     (
@@ -59,7 +61,6 @@ export default async function Image({
           position: "relative",
         }}
       >
-        {/* 背景装飾（薄い円） */}
         <div
           style={{
             position: "absolute",
@@ -73,7 +74,16 @@ export default async function Image({
           }}
         />
 
-        {/* 曲名（中央・大きく） */}
+        <div
+          style={{
+            fontSize: 36,
+            color: "#94a3b8",
+            marginBottom: 20,
+          }}
+        >
+          {artistName}
+        </div>
+
         <div
           style={{
             fontSize: 72,
@@ -89,7 +99,6 @@ export default async function Image({
           {title}
         </div>
 
-        {/* 「コール表」バッジ */}
         <div
           style={{
             marginTop: 30,
@@ -105,18 +114,6 @@ export default async function Image({
           コール表
         </div>
 
-        {/* 下部：アーティスト名 */}
-        <div
-          style={{
-            marginTop: 40,
-            fontSize: 36,
-            color: "#94a3b8",
-          }}
-        >
-          {artistName}
-        </div>
-
-        {/* 右下：サイト名 */}
         <div
           style={{
             position: "absolute",
@@ -126,15 +123,6 @@ export default async function Image({
             alignItems: "center",
           }}
         >
-          <div
-            style={{
-              background: "#E11D48",
-              width: 12,
-              height: 12,
-              borderRadius: "50%",
-              marginRight: 10,
-            }}
-          />
           <span
             style={{
               fontSize: 28,

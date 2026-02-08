@@ -3,17 +3,20 @@ export const runtime = "edge";
 import { ImageResponse } from "next/og";
 import { createClient } from "@supabase/supabase-js";
 
-const size = { width: 1200, height: 630 };
 export const alt = "Call Guide Artist Detail";
+export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-const FONT_BOLD_URL =
-  "https://fonts.gstatic.com/s/notosansjp/v52/-F6jfjtqLzI2JPCgQBnw7HFyzSD-AsregP8VFBEj75vY3w.woff2";
-
-async function loadNotoSansJPBold(): Promise<ArrayBuffer> {
-  const res = await fetch(FONT_BOLD_URL);
-  if (!res.ok) throw new Error("Failed to load Noto Sans JP Bold");
-  return res.arrayBuffer();
+async function loadGoogleFont(text: string): Promise<ArrayBuffer> {
+  const url = `https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=${encodeURIComponent(text)}`;
+  const css = await fetch(url).then((res) => res.text());
+  const match = css.match(/src:\s*url\(([^)]+)\)\s+format\('(woff2|opentype|truetype)'\)/);
+  if (match) {
+    const fontUrl = match[1].replace(/^["']|["']$/g, "");
+    const response = await fetch(fontUrl);
+    if (response.ok) return response.arrayBuffer();
+  }
+  throw new Error("Failed to load font data");
 }
 
 export default async function Image({
@@ -22,7 +25,6 @@ export default async function Image({
   params: Promise<{ id: string }>;
 }) {
   const { id: artistId } = await params;
-  const fontData = await loadNotoSansJPBold();
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -38,6 +40,8 @@ export default async function Image({
     const row = artist as { name?: string } | null;
     if (row?.name) artistName = row.name;
   }
+
+  const fontData = await loadGoogleFont(artistName + "コール表楽曲一覧CallGuide");
 
   return new ImageResponse(
     (
@@ -56,7 +60,6 @@ export default async function Image({
           position: "relative",
         }}
       >
-        {/* 背景装飾 */}
         <div
           style={{
             position: "absolute",
@@ -70,7 +73,6 @@ export default async function Image({
           }}
         />
 
-        {/* サブタイトル */}
         <div
           style={{
             fontSize: 28,
@@ -82,7 +84,6 @@ export default async function Image({
           IDOL CALL GUIDE
         </div>
 
-        {/* アーティスト名 */}
         <div
           style={{
             fontSize: 80,
@@ -99,7 +100,6 @@ export default async function Image({
           {artistName}
         </div>
 
-        {/* 「コール表・楽曲一覧」バッジ */}
         <div
           style={{
             background: "rgba(255, 255, 255, 0.1)",
@@ -115,7 +115,6 @@ export default async function Image({
             boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
           }}
         >
-          {/* 簡易リストアイコン */}
           <div
             style={{
               display: "flex",
@@ -151,7 +150,6 @@ export default async function Image({
           コール表・楽曲一覧
         </div>
 
-        {/* 右下：サイト名 */}
         <div
           style={{
             position: "absolute",
