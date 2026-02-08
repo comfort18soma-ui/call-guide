@@ -1,11 +1,14 @@
 import { ImageResponse } from 'next/og'
 import { createClient } from '@supabase/supabase-js'
 
-export const runtime = 'edge'
+// ★最重要: runtime = 'nodejs' (これでメモリ不足によるグレー画像を回避)
+export const runtime = 'nodejs'
+
 export const alt = 'Song Detail'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
+// 軽量化のためのフォント取得関数
 async function loadGoogleFont(text: string) {
   const url = `https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=${encodeURIComponent(text)}`
   try {
@@ -42,9 +45,16 @@ export default async function Image({ params }: { params: { id: string } }) {
     if (error || !song) throw new Error(error?.message || 'Song not found')
 
     const title = song.title || 'No Title'
-    const artistName = song.artists?.name || song.artist || 'Unknown Artist'
 
-    // 曲名・アーティスト名・ロゴに必要な文字だけを取得
+    // ★ビルドエラー修正箇所: artistsをany型で受けて配列チェックを行う
+    const artistsData = song.artists as any
+    const artistNameFromRelation = Array.isArray(artistsData)
+      ? artistsData[0]?.name
+      : artistsData?.name
+
+    const artistName = artistNameFromRelation || song.artist || 'Unknown Artist'
+
+    // フォント取得
     const fontData = await loadGoogleFont(title + artistName + 'CallGuideCG')
 
     return new ImageResponse(
@@ -94,7 +104,7 @@ export default async function Image({ params }: { params: { id: string } }) {
             paddingTop: '30px',
             width: '100%',
           }}>
-             <div style={{
+            <div style={{
               background: '#000',
               color: '#fff',
               padding: '4px 12px',
