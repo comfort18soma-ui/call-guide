@@ -12,7 +12,6 @@ type Props = {
 }
 
 export default async function Image({ params }: Props) {
-  // ★重要: paramsをawait
   const { id: songId } = await params
 
   const fontData = await fetch(
@@ -38,7 +37,14 @@ export default async function Image({ params }: Props) {
   }
 
   const title = song.title ?? 'No Title'
-  const artistName = song.artists?.name ?? song.artist ?? 'Unknown Artist'
+
+  // ★修正箇所: artistsが配列かオブジェクトか判定して名前を取得
+  const artistData = song.artists as any
+  const artistNameFromRelation = Array.isArray(artistData)
+    ? artistData[0]?.name
+    : artistData?.name
+
+  const artistName = artistNameFromRelation ?? song.artist ?? 'Unknown Artist'
 
   return new ImageResponse(
     (
@@ -68,7 +74,7 @@ export default async function Image({ params }: Props) {
             {title}
           </div>
 
-          {/* アーティスト名（グレー） */}
+          {/* アーティスト名 */}
           <div style={{
             fontSize: 40,
             color: '#555555',
