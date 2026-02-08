@@ -13,16 +13,14 @@ async function loadGoogleFont(text: string): Promise<ArrayBuffer | null> {
     const css = await fetch(url, {
       headers: {
         "User-Agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36",
+          "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
       },
     }).then((res) => res.text());
 
-    const resource = css.match(
-      /src: url\((.+)\) format\('(opentype|truetype|woff|woff2)'\)/
-    );
+    const resource = css.match(/src: url\((?:'|")?([^'"]+)(?:'|")?\)/);
 
-    if (resource) {
-      const fontUrl = resource[1].replace(/^["']|["']$/g, "");
+    if (resource && resource[1]) {
+      const fontUrl = resource[1].trim();
       const response = await fetch(fontUrl);
       if (response.status === 200) return response.arrayBuffer();
     }
@@ -56,7 +54,7 @@ export default async function Image({
     if (row?.artists?.name) artistName = row.artists.name;
   }
 
-  const textToRender = title + artistName + "コール表CallGuideCG";
+  const textToRender = title + artistName + "コール表CallGuideCG≒";
   const fontData = await loadGoogleFont(textToRender);
 
   return new ImageResponse(
@@ -101,7 +99,7 @@ export default async function Image({
 
         <div
           style={{
-            fontSize: 80,
+            fontSize: 100,
             fontWeight: "bold",
             textAlign: "center",
             padding: "0 40px",
@@ -153,14 +151,7 @@ export default async function Image({
     {
       ...size,
       fonts: fontData
-        ? [
-            {
-              name: "NotoSansJP",
-              data: fontData,
-              style: "normal" as const,
-              weight: 700,
-            },
-          ]
+        ? [{ name: "NotoSansJP", data: fontData, style: "normal" as const, weight: 700 }]
         : [],
     }
   );
