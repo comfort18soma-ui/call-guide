@@ -11,18 +11,18 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://callguide.jp"),
   title: {
-    default: "Call Guide",
+    default: "Call Guide - アイドルコール・MIX共有サイト",
     template: "%s | Call Guide",
   },
-  description: "アイドル・コンカフェのコールガイド共有サイト",
+  description: "アイドルのライブで使われるコール、MIX、口上をセットリストに合わせて共有・検索できるプラットフォームです。",
   themeColor: "#000000",
   icons: {
     icon: [{ url: "/icon-192.png?v=2", sizes: "192x192", type: "image/png" }],
     apple: [{ url: "/apple-touch-icon.png?v=2", sizes: "180x180", type: "image/png" }],
   },
   openGraph: {
-    title: "Call Guide",
-    description: "アイドル・コンカフェのコールガイド共有サイト",
+    title: "Call Guide - アイドルコール・MIX共有サイト",
+    description: "アイドルのライブで使われるコール、MIX、口上をセットリストに合わせて共有・検索できるプラットフォームです。",
     siteName: "Call Guide",
     locale: "ja_JP",
     type: "website",

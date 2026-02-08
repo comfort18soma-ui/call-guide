@@ -1,7 +1,7 @@
 {
   "name": "Call Guide",
   "short_name": "Call Guide",
-  "description": "アイドル・コンカフェのコールガイド共有サイト",
+  "description": "アイドルのライブで使われるコール、MIX、口上をセットリストに合わせて共有・検索できるプラットフォームです。",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",

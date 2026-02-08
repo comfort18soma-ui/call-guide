@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Combobox, ComboboxOption } from "@/components/ui/combobox";
+import { convertAmazonLink } from "@/lib/affiliate";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -164,6 +165,8 @@ export default function RequestsPage() {
     setError(null);
 
     try {
+      const amazonUrlRaw = amazonMusicUrl.trim() || null;
+      const amazonUrl = amazonUrlRaw ? (convertAmazonLink(amazonUrlRaw) ?? amazonUrlRaw) : null;
 
       const payload: RequestInsert = {
         type: "song",
@@ -173,7 +176,7 @@ export default function RequestsPage() {
         song_title: songTitle.trim(),
         youtube_url: youtubeUrl.trim() || null,
         apple_music_url: appleMusicUrl.trim() || null,
-        amazon_music_url: amazonMusicUrl.trim() || null,
+        amazon_music_url: amazonUrl,
       };
 
       const { error: insertError } = await supabase.from("requests").insert(payload);

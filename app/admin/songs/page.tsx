@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Edit, Music, Youtube } from "lucide-react";
+import { convertAmazonLink } from "@/lib/affiliate";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -154,6 +155,8 @@ export default function AdminSongsPage() {
     try {
       const artistIdNumber = Number(artistIdInput);
 
+      const amazonUrl = convertAmazonLink(amazonMusicInput.trim()) ?? amazonMusicInput.trim() || null;
+
       if (editingSong) {
         const { error } = await supabase
           .from("songs")
@@ -162,7 +165,7 @@ export default function AdminSongsPage() {
             artist_id: artistIdNumber,
             youtube_url: youtubeInput.trim() || null,
             apple_music_url: appleMusicInput.trim() || null,
-            amazon_music_url: amazonMusicInput.trim() || null,
+            amazon_music_url: amazonUrl,
           })
           .eq("id", editingSong.id);
         if (error) throw error;
@@ -172,7 +175,7 @@ export default function AdminSongsPage() {
           artist_id: artistIdNumber,
           youtube_url: youtubeInput.trim() || null,
           apple_music_url: appleMusicInput.trim() || null,
-          amazon_music_url: amazonMusicInput.trim() || null,
+          amazon_music_url: amazonUrl,
         });
         if (error) throw error;
       }
