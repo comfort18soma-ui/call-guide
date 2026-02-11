@@ -8,6 +8,7 @@ import { createClient } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { useUserRole } from "@/hooks/useUserRole";
 import { EditSongModal } from "@/components/EditSongModal";
+import AddToSetlistButton from "@/components/AddToSetlistButton";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -535,6 +536,9 @@ export default function SongDetailPage() {
                         >
                           <span className="min-w-[1.5rem] text-right">
                             {chart.like_count ?? 0}
+                          </span>
+                          <span onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}>
+                            <AddToSetlistButton songId={song.id} callId={Number(chart.id)} />
                           </span>
                           <Button
                             type="button"

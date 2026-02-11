@@ -15,6 +15,7 @@ import { createClient } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { useUserRole } from "@/hooks/useUserRole";
 import { ReportDialog } from "@/components/report-dialog";
+import AddToSetlistButton from "@/components/AddToSetlistButton";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -500,7 +501,7 @@ export default function CallChartDetailPage() {
             作成日: {new Date(chart.created_at).toLocaleDateString("ja-JP")}
           </p>
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Button
                 type="button"
                 variant="outline"
@@ -515,6 +516,7 @@ export default function CallChartDetailPage() {
                 />
                 <span className="ml-1 tabular-nums">{likeCount}</span>
               </Button>
+              <AddToSetlistButton songId={song.id} callId={Number(chart.id)} />
               <button
                 type="button"
                 onClick={handleShare}

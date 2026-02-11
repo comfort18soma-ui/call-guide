@@ -89,7 +89,20 @@ type MyBoardRow = {
   created_at: string;
 };
 
-type TabKey = "practice" | "favorites" | "following" | "my_mixes" | "my_charts" | "my_boards";
+type MySetlistRow = {
+  id: string;
+  title: string | null;
+  created_at: string;
+};
+
+type TabKey =
+  | "practice"
+  | "favorites"
+  | "following"
+  | "my_mixes"
+  | "my_charts"
+  | "my_boards"
+  | "my_setlists";
 
 type BookmarkItem = BookmarkWithMix | BookmarkWithCallChart;
 
@@ -101,6 +114,7 @@ export default function MypagePage() {
   const [myMixList, setMyMixList] = useState<MyMixRow[]>([]);
   const [myChartList, setMyChartList] = useState<MyChartRow[]>([]);
   const [myBoardList, setMyBoardList] = useState<MyBoardRow[]>([]);
+  const [mySetlistList, setMySetlistList] = useState<MySetlistRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -134,6 +148,7 @@ export default function MypagePage() {
       setMyMixList([]);
       setMyChartList([]);
       setMyBoardList([]);
+      setMySetlistList([]);
       setLoading(false);
       return;
     }
@@ -151,6 +166,7 @@ export default function MypagePage() {
         myMixesRes,
         myChartsRes,
         myBoardsRes,
+        mySetlistsRes,
       ] = await Promise.all([
         supabase
           .from("bookmarks")
@@ -189,6 +205,11 @@ export default function MypagePage() {
           .select("id, group_name, event_date, status, created_at")
           .eq("user_id", userId)
           .order("created_at", { ascending: false }),
+        supabase
+          .from("setlists")
+          .select("id, title, created_at")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false }),
       ]);
 
       if (bookmarksMixRes.error) throw bookmarksMixRes.error;
@@ -201,6 +222,7 @@ export default function MypagePage() {
       if (myMixesRes.error) throw myMixesRes.error;
       if (myChartsRes.error) throw myChartsRes.error;
       if (myBoardsRes.error) throw myBoardsRes.error;
+      if (mySetlistsRes.error) throw mySetlistsRes.error;
 
       const allMixBookmarks = (bookmarksMixRes.data ?? []) as unknown as BookmarkWithMix[];
       setPracticeList(allMixBookmarks.filter((b) => b.category === "practice"));
@@ -209,6 +231,7 @@ export default function MypagePage() {
       setMyMixList((myMixesRes.data ?? []) as MyMixRow[]);
       setMyChartList((myChartsRes.data ?? []) as MyChartRow[]);
       setMyBoardList((myBoardsRes.data ?? []) as MyBoardRow[]);
+      setMySetlistList((mySetlistsRes.data ?? []) as MySetlistRow[]);
 
       if (profileRes.data) {
         const { username, x_link } = profileRes.data as { username: string | null; x_link: string | null };
@@ -233,6 +256,7 @@ export default function MypagePage() {
       setMyMixList([]);
       setMyChartList([]);
       setMyBoardList([]);
+      setMySetlistList([]);
     } finally {
       setLoading(false);
     }
@@ -393,6 +417,35 @@ export default function MypagePage() {
     }
   };
 
+  const handleDeleteMySetlist = async (setlistId: string) => {
+    if (!window.confirm("このセットリストを削除しますか？この操作は取り消せません。")) return;
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const userId = session?.user?.id;
+    if (!userId) {
+      alert("ログインが必要です");
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("setlists")
+        .delete()
+        .eq("id", setlistId)
+        .eq("user_id", userId);
+
+      if (error) throw error;
+
+      setMySetlistList((prev) => prev.filter((s) => s.id !== setlistId));
+      alert("セットリストを削除しました");
+    } catch (err) {
+      console.error("セットリスト削除エラー:", err);
+      alert("セットリストの削除に失敗しました");
+    }
+  };
+
   const handleSaveProfile = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     const userId = session?.user?.id;
@@ -546,6 +599,7 @@ export default function MypagePage() {
                 <SelectItem value="favorites">❤️ お気に入り</SelectItem>
                 <SelectItem value="following">👤 フォロー中</SelectItem>
                 <div className="my-1 border-t border-zinc-800" />
+                <SelectItem value="my_setlists">📋 セットリスト</SelectItem>
                 <SelectItem value="my_mixes">🎵 投稿したMIX</SelectItem>
                 <SelectItem value="my_charts">🎤 投稿したコール表</SelectItem>
                 <SelectItem value="my_boards">📅 投稿したイベント</SelectItem>
@@ -821,6 +875,46 @@ export default function MypagePage() {
                     </li>
                   );
                 })}
+              </ul>
+            )}
+          </TabsContent>
+
+          <TabsContent value="my_setlists" className="mt-0">
+            {loading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
+              </div>
+            ) : mySetlistList.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-zinc-800 bg-zinc-950/60 p-8 text-center text-sm text-zinc-500">
+                あなたが作成したセットリストはまだありません。
+              </div>
+            ) : (
+              <ul className="space-y-2">
+                {mySetlistList.map((s) => (
+                  <li key={s.id}>
+                    <Card className="rounded-xl border-zinc-800 bg-zinc-950/80">
+                      <CardContent className="flex items-center gap-3 p-4">
+                        <Link href={`/setlists/${s.id}`} className="min-w-0 flex-1">
+                          <p className="font-medium text-zinc-100">{s.title ?? "（タイトルなし）"}</p>
+                          <p className="mt-0.5 text-xs text-zinc-500">
+                            作成日: {new Date(s.created_at).toLocaleDateString("ja-JP")}
+                          </p>
+                        </Link>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 shrink-0 rounded-full p-2 hover:bg-zinc-800 transition-colors"
+                          onClick={() => handleDeleteMySetlist(s.id)}
+                          title="セットリストを削除"
+                          aria-label="セットリストを削除"
+                        >
+                          <Trash2 className="h-4 w-4 text-zinc-400" />
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </li>
+                ))}
               </ul>
             )}
           </TabsContent>
