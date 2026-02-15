@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 import ShareButton from '@/components/ShareButton'
 import DeleteSongButton from '@/components/DeleteSongButton'
 import SetlistTitleEditor from '@/components/SetlistTitleEditor'
+import SetlistDescription from '@/components/SetlistDescription'
 
 export const runtime = 'nodejs'
 
@@ -97,13 +98,19 @@ export default async function SetlistPage({ params }: Props) {
 
         <div className="flex flex-wrap items-center justify-between gap-4 mt-4">
           <div className="flex gap-4 text-sm text-gray-500">
-            <span>{new Date(setlist.created_at).toLocaleDateString()}</span>
+            <span>{new Date(setlist.created_at).toLocaleDateString('ja-JP')}</span>
             <span>•</span>
             <span>{items?.length || 0} 曲</span>
           </div>
           <ShareButton title={setlist.title} text={shareText} url={shareUrl} />
         </div>
       </div>
+
+      <SetlistDescription
+        setlistId={setlist.id}
+        initialDescription={(setlist as { description?: string | null }).description ?? null}
+        ownerId={setlist.user_id ?? ''}
+      />
 
       <div className="space-y-2">
         {items && items.length > 0 ? (

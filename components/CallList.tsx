@@ -34,10 +34,15 @@ export default function CallList({ charts, songId }: Props) {
             className="block bg-[#111] hover:bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 transition group"
           >
             <div className="flex items-center justify-between">
-              <div>
+              <div className="min-w-0 flex-1">
                 <h3 className="font-bold text-lg mb-1 group-hover:text-blue-400 transition">
                   {chart.title || '（タイトルなし）'}
                 </h3>
+                {chart.comment && (
+                  <p className="text-sm text-gray-400 break-words whitespace-pre-wrap mb-1">
+                    {chart.comment}
+                  </p>
+                )}
                 <div className="flex items-center gap-3 text-sm text-gray-500">
                   <span>{authorName}</span>
                   <span>•</span>

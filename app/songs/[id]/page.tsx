@@ -37,6 +37,7 @@ export default async function SongPage({ params, searchParams }: Props) {
     .select(`
       id,
       title,
+      comment,
       created_at,
       like_count,
       profiles!call_charts_author_id_fkey ( username, handle )

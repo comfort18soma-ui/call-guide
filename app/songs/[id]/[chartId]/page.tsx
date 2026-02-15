@@ -59,6 +59,7 @@ type SectionRow = {
 type ChartDetail = {
   id: string;
   title: string | null;
+  comment: string | null;
   created_at: string;
   like_count?: number;
   author_id: string | null;
@@ -99,6 +100,7 @@ export default function CallChartDetailPage() {
             song_id,
             author_id,
             title,
+            comment,
             created_at,
             like_count,
             profiles!call_charts_author_id_fkey (
@@ -138,6 +140,7 @@ export default function CallChartDetailPage() {
           song_id: number;
           author_id: string | null;
           title: string | null;
+          comment: string | null;
           created_at: string;
           like_count?: number | null;
           profiles?: { username: string | null; handle: string | null } | null;
@@ -205,6 +208,7 @@ export default function CallChartDetailPage() {
         setChart({
           id: row.id,
           title: row.title,
+          comment: row.comment ?? null,
           created_at: row.created_at,
           like_count: row.like_count ?? 0,
           author_id: row.author_id,
@@ -583,6 +587,17 @@ export default function CallChartDetailPage() {
             </ul>
           </div>
         </section>
+
+        {chart.comment && (
+          <section className="mt-6 border-t border-gray-800 pt-6">
+            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">
+              備考
+            </h3>
+            <p className="whitespace-pre-wrap text-sm text-gray-300">
+              {chart.comment}
+            </p>
+          </section>
+        )}
 
         <div className="mt-6 flex justify-center">
           <ReportDialog targetId={chart.id} targetType="call_chart" />

@@ -56,6 +56,7 @@ export default function SongAddCallPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [chartTitle, setChartTitle] = useState("");
+  const [chartComment, setChartComment] = useState("");
   const [authorName, setAuthorName] = useState("");
   const [authorId, setAuthorId] = useState<string | null>(null);
   const [rows, setRows] = useState<SectionRow[]>(() => [initialRow()]);
@@ -213,6 +214,7 @@ export default function SongAddCallPage() {
           author_id: authorIdToSave,
           author_name: finalAuthorName,
           title: chartTitle.trim() || null,
+          comment: chartComment.trim() || null,
           status: "approved",
         })
         .select("id")
@@ -330,6 +332,20 @@ export default function SongAddCallPage() {
                   value={chartTitle}
                   onChange={(e) => setChartTitle(e.target.value)}
                   className="h-9 py-1.5 text-sm rounded-xl border-zinc-800 bg-zinc-900"
+                  disabled={submitting}
+                />
+              </div>
+              <div>
+                <Label htmlFor="chart-comment" className="text-xs font-medium text-zinc-300 mb-0.5 block">
+                  備考（任意）
+                </Label>
+                <Textarea
+                  id="chart-comment"
+                  rows={2}
+                  placeholder="このコール表についてのメモや補足"
+                  value={chartComment}
+                  onChange={(e) => setChartComment(e.target.value)}
+                  className="py-1.5 text-sm rounded-xl border-zinc-800 bg-zinc-900 resize-y"
                   disabled={submitting}
                 />
               </div>
