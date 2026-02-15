@@ -558,17 +558,17 @@ export default function CallChartDetailPage() {
                     key={sec.id}
                     className="grid grid-cols-[minmax(0,120px)_1fr] gap-3 px-3 py-3 first:pt-3 sm:grid-cols-[140px_1fr]"
                   >
-                    <div className="shrink-0 rounded-lg bg-zinc-800 px-2 py-1 text-xs font-medium text-zinc-200">
+                    <div className="min-w-0 shrink-0 rounded-lg bg-zinc-800 px-2 py-1 text-xs font-medium text-zinc-200">
                       <div>{sec.section_name || "—"}</div>
                       {sec.mix_id && sec.mix_title && (
                         <Link
                           href={`/mixes/${sec.mix_id}`}
-                          className="mt-1 inline-flex items-center gap-1 text-[10px] font-normal text-emerald-300 hover:text-emerald-200 hover:underline"
+                          className="mt-1 flex min-w-0 items-start gap-1 text-[10px] sm:text-xs font-normal text-emerald-300 hover:text-emerald-200 hover:underline"
                         >
-                          <span className="rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[9px] uppercase tracking-wide">
+                          <span className="shrink-0 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[9px] uppercase tracking-wide">
                             MIX
                           </span>
-                          <span className="max-w-[120px] truncate">
+                          <span className="min-w-0 break-words text-[10px] sm:text-xs">
                             {sec.mix_title}
                           </span>
                         </Link>
