@@ -41,7 +41,7 @@ export default function CallList({ charts, songId }: Props) {
                 <div className="flex items-center gap-3 text-sm text-gray-500">
                   <span>{authorName}</span>
                   <span>•</span>
-                  <span>{new Date(chart.created_at).toLocaleDateString()}</span>
+                  <span>{new Date(chart.created_at).toLocaleDateString('ja-JP')}</span>
                 </div>
               </div>
 

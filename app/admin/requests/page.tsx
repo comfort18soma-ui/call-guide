@@ -71,6 +71,7 @@ type RequestRow = {
   type: RequestType;
   status: RequestStatus;
   created_at: string;
+  user_id?: string | null;
   artist_name?: string | null;
   artist_reading?: string | null;
   artist_x_url?: string | null;
@@ -322,6 +323,7 @@ export default function AdminRequestsPage() {
           reference_url: req.reference_url?.trim() || null,
           url: req.reference_url?.trim() || null,
           bookmark_count: 0,
+          author_id: req.user_id ?? null,
         };
         const { error: insertError } = await supabase.from("mixes").insert(insertPayload);
         if (insertError) throw insertError;
