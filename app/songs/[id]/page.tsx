@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import CallList from '@/components/CallList'
+import EditSongLinksModal from '@/components/EditSongLinksModal'
 
 export const runtime = 'nodejs'
 
@@ -72,11 +73,14 @@ export default async function SongPage({ params, searchParams }: Props) {
             <h1 className="text-3xl font-bold mb-2">{song.title}</h1>
             <p className="text-gray-400 text-lg">{artistName}</p>
           </div>
-          <Link href={`/songs/${song.id}/edit`} className="text-gray-500 hover:text-white p-2">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-            </svg>
-          </Link>
+          <EditSongLinksModal
+            song={{
+              id: song.id,
+              youtube_url: (song as any).youtube_url ?? null,
+              apple_music_url: (song as any).apple_music_url ?? null,
+              amazon_music_url: (song as any).amazon_music_url ?? null,
+            }}
+          />
         </div>
 
         <div className="mt-6 flex gap-3">

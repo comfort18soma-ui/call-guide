@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import ShareButton from '@/components/ShareButton'
+import DeleteSongButton from '@/components/DeleteSongButton'
 import SetlistTitleEditor from '@/components/SetlistTitleEditor'
 
 export const runtime = 'nodejs'
@@ -104,7 +105,7 @@ export default async function SetlistPage({ params }: Props) {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-2">
         {items && items.length > 0 ? (
           items.map((item: any, index: number) => {
             const song = item.songs
@@ -121,42 +122,43 @@ export default async function SetlistPage({ params }: Props) {
             return (
               <div key={item.id} className="group relative pl-4 md:pl-0">
                 <div className="absolute left-[-10px] top-0 bottom-0 w-0.5 bg-gray-800 md:hidden"></div>
-                <div className="flex items-center gap-4 bg-[#111] hover:bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 transition shadow-sm">
-                  <div className="text-xl font-black text-gray-600 w-8 text-center shrink-0">{index + 1}</div>
+                <div className="flex items-center gap-3 bg-[#111] hover:bg-[#1a1a1a] border border-gray-800 rounded-xl py-2 px-3 transition shadow-sm">
+                  <div className="text-base font-black text-gray-600 w-6 text-center shrink-0">{index + 1}</div>
                   <div className="flex-1 min-w-0">
-                    <h2 className="text-lg font-bold mb-1 truncate text-white">{song.title}</h2>
-                    <p className="text-gray-400 text-sm truncate mb-1.5">{artistName}</p>
+                    <h2 className="text-base font-bold mb-0.5 truncate text-white">{song.title}</h2>
+                    <p className="text-gray-400 text-xs truncate mb-1">{artistName}</p>
                     {chart && (
-                      <div className="flex items-center gap-3 text-sm text-gray-500 bg-gray-900/50 py-1 px-2 rounded-md inline-flex max-w-full">
+                      <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-900/50 py-0.5 px-2 rounded-md inline-flex max-w-full">
                         <span className="font-bold text-gray-300 truncate shrink">{chartTitle}</span>
-                        <span className="text-gray-700 text-xs shrink-0">|</span>
-                        <span className="text-gray-500 text-xs truncate">作成者: {authorName}</span>
+                        <span className="text-gray-700 shrink-0">|</span>
+                        <span className="text-gray-500 truncate">作成者: {authorName}</span>
                       </div>
                     )}
                   </div>
-                  <div className="shrink-0 ml-2">
+                  <div className="shrink-0 ml-2 flex items-center gap-1.5">
                     {chart ? (
                       <Link
                         href={`/songs/${song.id}/${chart.id}`}
-                        className="flex items-center gap-2 bg-blue-900/30 hover:bg-blue-800/50 text-blue-400 px-4 py-2 rounded-full text-sm font-bold transition border border-blue-900/50 whitespace-nowrap"
+                        className="flex items-center gap-1.5 bg-blue-900/30 hover:bg-blue-800/50 text-blue-400 px-3 py-1.5 rounded-full text-xs font-bold transition border border-blue-900/50 whitespace-nowrap"
                       >
                         <span className="hidden md:inline">コール表</span>
                         <span className="md:hidden">表</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
                           <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                         </svg>
                       </Link>
                     ) : (
                       <Link
                         href={`/songs/${song.id}`}
-                        className="flex items-center gap-2 bg-gray-800/50 hover:bg-gray-700/50 text-gray-400 px-4 py-2 rounded-full text-sm font-bold transition border border-gray-700 whitespace-nowrap"
+                        className="flex items-center gap-1.5 bg-gray-800/50 hover:bg-gray-700/50 text-gray-400 px-3 py-1.5 rounded-full text-xs font-bold transition border border-gray-700 whitespace-nowrap"
                       >
                         曲ページ
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
                           <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                         </svg>
                       </Link>
                     )}
+                    <DeleteSongButton itemId={item.id} ownerId={setlist.user_id ?? ''} compact />
                   </div>
                 </div>
               </div>

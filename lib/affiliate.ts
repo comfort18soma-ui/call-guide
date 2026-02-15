@@ -1,16 +1,21 @@
 const AFFILIATE_TAG = "callguide2026-22";
 
 /**
- * Amazon 系URL（amazon.co.jp / amzn.to）の場合のみ、
+ * Amazon 系URL（amazon.co.jp / amzn.to / music.amazon.*）の場合、
  * クエリに tag=callguide2026-22 を追加または上書きして返す。
  * 既存のクエリパラメータは維持する。
+ * URL オブジェクトを使用し、searchParams.set で tag を追加/上書きする。
  */
 export function convertAmazonLink(url: string | null | undefined): string | null {
   const raw = (url ?? "").trim();
   if (!raw) return null;
 
   const lower = raw.toLowerCase();
-  if (!lower.includes("amazon.co.jp") && !lower.includes("amzn.to")) {
+  const isAmazonUrl =
+    lower.includes("amazon.co.jp") ||
+    lower.includes("amzn.to") ||
+    lower.includes("music.amazon.");
+  if (!isAmazonUrl) {
     return raw;
   }
 

@@ -317,11 +317,11 @@ export default function SongAddCallPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <Card className="rounded-xl border-zinc-800 bg-zinc-950/80">
-            <CardContent className="p-4 space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="chart-title" className="text-sm font-medium text-zinc-300">
+            <CardContent className="p-3 space-y-2">
+              <div>
+                <Label htmlFor="chart-title" className="text-xs font-medium text-zinc-300 mb-0.5 block">
                   タイトル
                 </Label>
                 <Input
@@ -329,15 +329,15 @@ export default function SongAddCallPage() {
                   placeholder="例: ガチ恋口上ありVer"
                   value={chartTitle}
                   onChange={(e) => setChartTitle(e.target.value)}
-                  className="h-11 rounded-xl border-zinc-800 bg-zinc-900"
+                  className="h-9 py-1.5 text-sm rounded-xl border-zinc-800 bg-zinc-900"
                   disabled={submitting}
                 />
               </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-zinc-300">
+              <div>
+                <Label className="text-xs font-medium text-zinc-300 mb-0.5 block">
                   投稿者
                 </Label>
-                <p className="rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-zinc-300">
+                <p className="rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-300">
                   {authorName || "（マイページで投稿者名を設定してください）"}
                 </p>
               </div>
@@ -346,52 +346,52 @@ export default function SongAddCallPage() {
 
           {rows.map((row, index) => (
             <Card key={index} className="rounded-xl border-zinc-800 bg-zinc-950/80">
-              <CardContent className="p-4 space-y-3">
-                <div className="flex items-center gap-2 text-sm font-medium text-zinc-400">
-                  [ {index + 1} ]
+              <CardContent className="p-2 space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-zinc-400 shrink-0">[ {index + 1} ]</span>
+                  <div className="flex-1 min-w-0">
+                    <Label className="text-xs font-medium text-zinc-300 mb-0 block">場所</Label>
+                    <Input
+                      placeholder="例: イントロ, 1番Aメロ"
+                      value={row.section_name}
+                      onChange={(e) => updateRow(index, "section_name", e.target.value)}
+                      className="h-7 py-1 text-sm rounded-lg border-zinc-800 bg-zinc-900"
+                      disabled={submitting}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-zinc-300">場所</Label>
-                  <Input
-                    placeholder="例: イントロ, 1番Aメロ"
-                    value={row.section_name}
-                    onChange={(e) => updateRow(index, "section_name", e.target.value)}
-                    className="h-10 rounded-xl border-zinc-800 bg-zinc-900"
-                    disabled={submitting}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-zinc-300">内容</Label>
+                <div>
+                  <Label className="text-xs font-medium text-zinc-300 mb-0 block">内容</Label>
                   <div className="flex gap-2">
                     <Textarea
-                      rows={4}
+                      rows={2}
                       placeholder="コール内容。「MIX辞典から選ぶ」で引用できます。"
                       value={row.content}
                       onChange={(e) => updateRow(index, "content", e.target.value)}
-                      className="flex-1 rounded-xl border-zinc-800 bg-zinc-900 text-sm whitespace-pre-wrap"
+                      className="flex-1 py-1 text-sm rounded-lg border-zinc-800 bg-zinc-900 whitespace-pre-wrap resize-y"
                       disabled={submitting}
                     />
-                    <div className="flex flex-col gap-2 shrink-0">
+                    <div className="flex flex-col gap-1 shrink-0">
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="rounded-lg border-zinc-700 whitespace-nowrap"
+                        className="h-7 rounded-lg border-zinc-700 whitespace-nowrap text-xs px-2 py-0"
                         onClick={() => openDictionary(index)}
                         disabled={submitting}
                       >
-                        <BookOpen className="mr-1 h-4 w-4" />
-                        MIX辞典から選ぶ
+                        <BookOpen className="mr-1 h-3 w-3" />
+                        MIX辞典
                       </Button>
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="rounded-lg border-zinc-700 text-red-400 hover:text-red-300"
+                        className="h-7 rounded-lg border-zinc-700 text-red-400 hover:text-red-300 text-xs px-2 py-0"
                         onClick={() => removeRow(index)}
                         disabled={submitting || rows.length <= 1}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3" />
                         削除
                       </Button>
                     </div>
@@ -404,11 +404,12 @@ export default function SongAddCallPage() {
           <Button
             type="button"
             variant="outline"
-            className="w-full rounded-xl border-dashed border-zinc-700"
+            size="sm"
+            className="h-9 w-full rounded-xl border-dashed border-zinc-700 text-sm"
             onClick={addRow}
             disabled={submitting}
           >
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="mr-2 h-3.5 w-3.5" />
             ＋行を追加
           </Button>
 

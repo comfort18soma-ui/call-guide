@@ -889,14 +889,14 @@ export default function MypagePage() {
                 あなたが作成したセットリストはまだありません。
               </div>
             ) : (
-              <ul className="space-y-2">
+              <ul className="space-y-1.5">
                 {mySetlistList.map((s) => (
                   <li key={s.id}>
-                    <Card className="rounded-xl border-zinc-800 bg-zinc-950/80">
-                      <CardContent className="flex items-center gap-3 p-4">
+                    <Card className="rounded-xl border-zinc-800 bg-zinc-950/80 transition-colors hover:border-zinc-700 hover:bg-zinc-900/80">
+                      <CardContent className="flex items-center gap-2 p-3">
                         <Link href={`/setlists/${s.id}`} className="min-w-0 flex-1">
-                          <p className="font-medium text-zinc-100">{s.title ?? "（タイトルなし）"}</p>
-                          <p className="mt-0.5 text-xs text-zinc-500">
+                          <p className="text-base font-bold text-zinc-100 truncate">{s.title ?? "（タイトルなし）"}</p>
+                          <p className="mt-1 text-xs text-zinc-500">
                             作成日: {new Date(s.created_at).toLocaleDateString("ja-JP")}
                           </p>
                         </Link>
@@ -904,12 +904,12 @@ export default function MypagePage() {
                           type="button"
                           size="icon"
                           variant="ghost"
-                          className="h-8 w-8 shrink-0 rounded-full p-2 hover:bg-zinc-800 transition-colors"
+                          className="h-7 w-7 shrink-0 rounded-full p-1.5 hover:bg-zinc-800 transition-colors"
                           onClick={() => handleDeleteMySetlist(s.id)}
                           title="セットリストを削除"
                           aria-label="セットリストを削除"
                         >
-                          <Trash2 className="h-4 w-4 text-zinc-400" />
+                          <Trash2 className="h-3.5 w-3.5 text-zinc-400" />
                         </Button>
                       </CardContent>
                     </Card>
