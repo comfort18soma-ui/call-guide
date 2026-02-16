@@ -68,9 +68,18 @@ export default function AdminNewsPage() {
         sessionStorage.setItem(TOAST_KEY, "1");
       }
       router.push("/");
-    } catch (err) {
-      console.error("お知らせ投稿エラー:", err);
-      setError(err instanceof Error ? err.message : "投稿に失敗しました");
+    } catch (err: unknown) {
+      const supabaseError = err as { message?: string; details?: string };
+      console.error(
+        "お知らせ投稿エラー:",
+        err,
+        supabaseError?.message,
+        supabaseError?.details
+      );
+      setError(
+        supabaseError?.message ??
+          (err instanceof Error ? err.message : "投稿に失敗しました")
+      );
     } finally {
       setSubmitting(false);
     }

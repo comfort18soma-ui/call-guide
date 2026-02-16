@@ -173,10 +173,13 @@ export default function HomePage() {
           {/* 最新のお知らせリストのみ表示 */}
           <section className="rounded-lg border border-zinc-800 bg-zinc-900/40 p-3">
             <div className="mb-2 flex items-center justify-between">
-              <h2 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-zinc-400">
+              <Link
+                href="/news"
+                className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-zinc-400 hover:text-zinc-200"
+              >
                 <Megaphone className="h-3.5 w-3.5 text-amber-500/80" />
                 お知らせ
-              </h2>
+              </Link>
               {role === "admin" && (
                 <Link
                   href="/admin/news"
@@ -195,15 +198,20 @@ export default function HomePage() {
                 news.map((item) => (
                   <li
                     key={item.id}
-                    className="flex items-baseline justify-between gap-2 border-b border-zinc-800/80 py-1.5 last:border-0"
+                    className="border-b border-zinc-800/80 last:border-0"
                   >
-                    <span className="shrink-0 text-[10px] tabular-nums text-zinc-500">
-                      {formatNewsDate(item.created_at)}
-                    </span>
-                    <span className="min-w-0 truncate text-xs font-medium text-zinc-200">
-                      {item.title}
-                    </span>
-                    <ChevronRight className="h-3 w-3 shrink-0 text-zinc-600" />
+                    <Link
+                      href={`/news/${item.id}`}
+                      className="flex items-baseline justify-between gap-2 py-1.5 hover:bg-zinc-900/60 rounded-sm transition-colors"
+                    >
+                      <span className="shrink-0 text-[10px] tabular-nums text-zinc-500">
+                        {formatNewsDate(item.created_at)}
+                      </span>
+                      <span className="min-w-0 truncate text-xs font-medium text-zinc-200">
+                        {item.title}
+                      </span>
+                      <ChevronRight className="h-3 w-3 shrink-0 text-zinc-600" />
+                    </Link>
                   </li>
                 ))
               )}
